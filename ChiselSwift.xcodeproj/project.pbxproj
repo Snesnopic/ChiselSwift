@@ -3,17 +3,42 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 100;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9D86508C2F8C2CE100A03D31 /* Chisel in Frameworks */ = {isa = PBXBuildFile; productRef = 9D86508B2F8C2CE100A03D31 /* Chisel */; };
+		9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D8650902F8C2D5200A03D31 /* libiconv.tbd */; };
+		9DDE60EC2F8CE4CA001CA9A1 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
-		9D86507C2F8C2CB700A03D31 /* testchisel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testchisel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9D86507C2F8C2CB700A03D31 /* ChiselSwift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChiselSwift.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9D8650902F8C2D5200A03D31 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
+		9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9DAF634B2F8C3D1700B87EE5 /* Exceptions for "ChiselSwift" folder in "ChiselSwift" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			platformFiltersByRelativePath = {
+				Views/iOS/ContentView.swift = (ios, );
+				Views/macOS/ContentView.swift = (macos, );
+			};
+			target = 9D86507B2F8C2CB700A03D31 /* ChiselSwift */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		9D86507E2F8C2CB700A03D31 /* testchisel */ = {
+		9DAF63452F8C3D1600B87EE5 /* ChiselSwift */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = testchisel;
+			exceptions = (
+				9DAF634B2F8C3D1700B87EE5 /* Exceptions for "ChiselSwift" folder in "ChiselSwift" target */,
+			);
+			path = ChiselSwift;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -21,10 +46,10 @@
 /* Begin PBXFrameworksBuildPhase section */
 		9D8650792F8C2CB700A03D31 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
+				9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */,
+				9D86508C2F8C2CE100A03D31 /* Chisel in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -32,7 +57,9 @@
 		9D8650732F8C2CB700A03D31 = {
 			isa = PBXGroup;
 			children = (
-				9D86507E2F8C2CB700A03D31 /* testchisel */,
+				9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */,
+				9DAF63452F8C3D1600B87EE5 /* ChiselSwift */,
+				9D86508F2F8C2D5200A03D31 /* Frameworks */,
 				9D86507D2F8C2CB700A03D31 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,17 +67,25 @@
 		9D86507D2F8C2CB700A03D31 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				9D86507C2F8C2CB700A03D31 /* testchisel.app */,
+				9D86507C2F8C2CB700A03D31 /* ChiselSwift.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9D86508F2F8C2D5200A03D31 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9D8650902F8C2D5200A03D31 /* libiconv.tbd */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		9D86507B2F8C2CB700A03D31 /* testchisel */ = {
+		9D86507B2F8C2CB700A03D31 /* ChiselSwift */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 9D8650872F8C2CB900A03D31 /* Build configuration list for PBXNativeTarget "testchisel" */;
+			buildConfigurationList = 9D8650872F8C2CB900A03D31 /* Build configuration list for PBXNativeTarget "ChiselSwift" */;
 			buildPhases = (
 				9D8650782F8C2CB700A03D31 /* Sources */,
 				9D8650792F8C2CB700A03D31 /* Frameworks */,
@@ -58,16 +93,15 @@
 			);
 			buildRules = (
 			);
-			dependencies = (
-			);
 			fileSystemSynchronizedGroups = (
-				9D86507E2F8C2CB700A03D31 /* testchisel */,
+				9DAF63452F8C3D1600B87EE5 /* ChiselSwift */,
 			);
-			name = testchisel;
+			name = ChiselSwift;
 			packageProductDependencies = (
+				9D86508B2F8C2CE100A03D31 /* Chisel */,
 			);
 			productName = testchisel;
-			productReference = 9D86507C2F8C2CB700A03D31 /* testchisel.app */;
+			productReference = 9D86507C2F8C2CB700A03D31 /* ChiselSwift.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,7 +119,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 9D8650772F8C2CB700A03D31 /* Build configuration list for PBXProject "testchisel" */;
+			buildConfigurationList = 9D8650772F8C2CB700A03D31 /* Build configuration list for PBXProject "ChiselSwift" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -94,12 +128,15 @@
 			);
 			mainGroup = 9D8650732F8C2CB700A03D31;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
+			packageReferences = (
+				9D86508A2F8C2CE100A03D31 /* XCLocalSwiftPackageReference "../ChiselKit" */,
+			);
+			preferredProjectObjectVersion = 100;
 			productRefGroup = 9D86507D2F8C2CB700A03D31 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				9D86507B2F8C2CB700A03D31 /* testchisel */,
+				9D86507B2F8C2CB700A03D31 /* ChiselSwift */,
 			);
 		};
 /* End PBXProject section */
@@ -107,25 +144,22 @@
 /* Begin PBXResourcesBuildPhase section */
 		9D86507A2F8C2CB700A03D31 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
+				9DDE60EC2F8CE4CA001CA9A1 /* Localizable.xcstrings in Resources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		9D8650782F8C2CB700A03D31 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		9D8650852F8C2CB900A03D31 /* Debug */ = {
+		9D8650852F8C2CB900A03D31 /* Debug configuration for PBXProject "ChiselSwift" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -185,11 +219,12 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
-		9D8650862F8C2CB900A03D31 /* Release */ = {
+		9D8650862F8C2CB900A03D31 /* Release configuration for PBXProject "ChiselSwift" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -242,95 +277,132 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
 		};
-		9D8650882F8C2CB900A03D31 /* Debug */ = {
+		9D8650882F8C2CB900A03D31 /* Debug configuration for PBXNativeTarget "ChiselSwift" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 3FRYF657J2;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ChiselSwift/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Chisel;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.snesnopic.testchisel;
+				PRODUCT_BUNDLE_IDENTIFIER = com.snesnopic.chiselswift;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		9D8650892F8C2CB900A03D31 /* Release */ = {
+		9D8650892F8C2CB900A03D31 /* Release configuration for PBXNativeTarget "ChiselSwift" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 3FRYF657J2;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ChiselSwift/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Chisel;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.snesnopic.testchisel;
+				PRODUCT_BUNDLE_IDENTIFIER = com.snesnopic.chiselswift;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		9D8650772F8C2CB700A03D31 /* Build configuration list for PBXProject "testchisel" */ = {
+		9D8650772F8C2CB700A03D31 /* Build configuration list for PBXProject "ChiselSwift" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				9D8650852F8C2CB900A03D31 /* Debug */,
-				9D8650862F8C2CB900A03D31 /* Release */,
+				9D8650852F8C2CB900A03D31 /* Debug configuration for PBXProject "ChiselSwift" */,
+				9D8650862F8C2CB900A03D31 /* Release configuration for PBXProject "ChiselSwift" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		9D8650872F8C2CB900A03D31 /* Build configuration list for PBXNativeTarget "testchisel" */ = {
+		9D8650872F8C2CB900A03D31 /* Build configuration list for PBXNativeTarget "ChiselSwift" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				9D8650882F8C2CB900A03D31 /* Debug */,
-				9D8650892F8C2CB900A03D31 /* Release */,
+				9D8650882F8C2CB900A03D31 /* Debug configuration for PBXNativeTarget "ChiselSwift" */,
+				9D8650892F8C2CB900A03D31 /* Release configuration for PBXNativeTarget "ChiselSwift" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		9D86508A2F8C2CE100A03D31 /* XCLocalSwiftPackageReference "../ChiselKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../ChiselKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9D86508B2F8C2CE100A03D31 /* Chisel */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Chisel;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9D8650742F8C2CB700A03D31 /* Project object */;
 }
