@@ -24,7 +24,7 @@ var view: Image {
 }
 
 func AppIconView() -> Image {
-    return view;
+    return view
 }
 #Preview("Light mode") {
     AppIconView()

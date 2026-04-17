@@ -61,19 +61,7 @@ struct CompressView: View {
                 List {
                     Section("Files") {
                         ForEach(viewModel.items) { item in
-                            // render disclosure group if there are children
-                            if let children = item.children, !children.isEmpty {
-                                DisclosureGroup {
-                                    ForEach(children) { child in
-                                        fileRow(for: child)
-                                    }
-                                } label: {
-                                    fileRow(for: item)
-                                }
-                            } else {
-                                // standard row for files without children
-                                fileRow(for: item)
-                            }
+                            recursiveFileNode(item)
                         }
                         .onDelete { indexSet in
                             viewModel.removeItems(at: indexSet)
@@ -145,6 +133,23 @@ struct CompressView: View {
         }
     }
     
+    // handles deep n-level rendering for nested archives
+    private func recursiveFileNode(_ item: FileItem) -> AnyView {
+        if let children = item.children, !children.isEmpty {
+            return AnyView(
+                DisclosureGroup {
+                    ForEach(children) { child in
+                        recursiveFileNode(child)
+                    }
+                } label: {
+                    fileRow(for: item)
+                }
+            )
+        } else {
+            return AnyView(fileRow(for: item))
+        }
+    }
+
     // reusable viewbuilder for file rows
     @ViewBuilder
     private func fileRow(for item: FileItem) -> some View {
@@ -157,7 +162,7 @@ struct CompressView: View {
                     Text(item.url.lastPathComponent)
                         .font(.headline)
                     
-                    if let children = item.children, children.count > 0 {
+                    if let children = item.children, children.isEmpty {
                         Text("\(children.count) files inside")
                             .font(.caption2)
                             .foregroundStyle(.secondary)

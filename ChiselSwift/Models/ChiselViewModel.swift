@@ -290,6 +290,7 @@ final class ChiselViewModel {
         
         items.remove(atOffsets: IndexSet(indicesToRemove))
     }
+    
     // recursively find the exact index path to the deepest matching parent
     private func findIndexPath(for path: String, in nodes: [FileItem]) -> [Int]? {
         // exact match
@@ -297,83 +298,135 @@ final class ChiselViewModel {
             return [idx]
         }
         
-        // deepest parent match
-        for i in 0..<nodes.count {
-            var current = nodes[i].url
-            var isParent = false
-            
-            while !current.pathExtension.isEmpty {
-                current = current.deletingPathExtension()
-                if path.contains(current.lastPathComponent) {
-                    isParent = true
-                    break
-                }
-            }
-            
-            if isParent {
-                // try to find an even deeper match in children
-                if let children = nodes[i].children, let childPath = findIndexPath(for: path, in: children) {
-                    return [i] + childPath
-                }
-                return [i]
+        // post-order traversal to find the deepest valid parent first
+        for idx in 0..<nodes.count {
+            if let children = nodes[idx].children, let childPath = findIndexPath(for: path, in: children) {
+                return [idx] + childPath
             }
         }
-        return nil
-    }
-    
-    // route event to parent or child based on path using n-level recursion
-    private func updateItem(for path: String, action: (inout FileItem, inout FileItem?, Int) -> Void) {
-        func mutate(nodes: inout [FileItem], indices: ArraySlice<Int>) {
-            guard let firstIndex = indices.first else { return }
+        
+        let pathURL = URL(fileURLWithPath: path)
+        let folderName = pathURL.deletingLastPathComponent().lastPathComponent
+        
+        // check if current node is the parent using strict folder boundary matching
+        for idx in 0..<nodes.count {
+            let parentURL = nodes[idx].url
+            let baseName = parentURL.deletingPathExtension().lastPathComponent
             
-            if indices.count == 1 {
-                // target level reached
-                if nodes[firstIndex].url.path == path {
-                    // event belongs to the parent node itself
-                    var dummyChild: FileItem? = nil
-                    action(&nodes[firstIndex], &dummyChild, firstIndex)
-                } else {
-                    // event belongs to a child
-                    if nodes[firstIndex].children == nil {
-                        nodes[firstIndex].children = []
-                    }
-                    
-                    let childURL = URL(fileURLWithPath: path)
-                    
-                    if let existingIdx = nodes[firstIndex].children?.firstIndex(where: { $0.url.path == path }) {
-                        var child: FileItem? = nodes[firstIndex].children![existingIdx]
-                        action(&nodes[firstIndex], &child, existingIdx)
-                        
-                        if let validChild = child {
-                            nodes[firstIndex].children![existingIdx] = validChild
-                        } else {
-                            nodes[firstIndex].children?.remove(at: existingIdx)
-                        }
-                    } else {
-                        var newChild: FileItem? = FileItem(
-                            url: childURL,
-                            status: .pending,
-                            size: 0,
-                            originalExtension: childURL.pathExtension.lowercased()
-                        )
-                        action(&nodes[firstIndex], &newChild, nodes[firstIndex].children?.count ?? 0)
-                        
-                        if let validChild = newChild {
-                            nodes[firstIndex].children?.append(validChild)
-                        }
-                    }
-                }
-            } else {
-                // traverse deeper into the tree
-                if nodes[firstIndex].children != nil {
-                    mutate(nodes: &nodes[firstIndex].children!, indices: indices.dropFirst())
+            if !baseName.isEmpty {
+                // strict matching against chisel c++ temporary directory formats
+                let isArchiveFolder = folderName.hasPrefix("archive_\(baseName)_")
+                let isExtractionFolder = folderName.hasPrefix("\(baseName)-")
+                let isExactFolder = folderName == baseName
+                
+                if isArchiveFolder || isExtractionFolder || isExactFolder {
+                    return [idx]
                 }
             }
         }
         
-        if let indexPath = findIndexPath(for: path, in: items) {
-            mutate(nodes: &items, indices: ArraySlice(indexPath))
-        }
+        return nil
     }
 
+    
+    // route event to parent or child based on path using n-level recursion
+    private func updateItem(for path: String, action: (inout FileItem, inout FileItem?, Int) -> Void) {
+        guard let indexPath = findIndexPath(for: path, in: items), !indexPath.isEmpty else { return }
+        
+        func applyAction(nodes: inout [FileItem], indices: ArraySlice<Int>) {
+            let idx = indices.first!
+            
+            if indices.count == 1 {
+                if nodes[idx].url.path == path {
+                    // exact match at root level
+                    var dummyParent = nodes[idx]
+                    var targetChild: FileItem? = nodes[idx]
+                    
+                    action(&dummyParent, &targetChild, idx)
+                    
+                    if let valid = targetChild {
+                        nodes[idx] = valid
+                    } else {
+                        nodes.remove(at: idx)
+                    }
+                } else {
+                    // parent match, append child
+                    if nodes[idx].children == nil {
+                        nodes[idx].children = []
+                    }
+                    
+                    let childURL = URL(fileURLWithPath: path)
+                    var newChild: FileItem? = FileItem(
+                        url: childURL,
+                        status: .pending,
+                        size: 0,
+                        originalExtension: childURL.pathExtension.lowercased()
+                    )
+                    
+                    action(&nodes[idx], &newChild, nodes[idx].children?.count ?? 0)
+                    
+                    if let valid = newChild {
+                        nodes[idx].children!.append(valid)
+                    }
+                }
+            } else {
+                // intercept exact match of a nested child to provide the real parent
+                if indices.count == 2 {
+                    let childIdx = indices.dropFirst().first!
+                    if nodes[idx].children![childIdx].url.path == path {
+                        var targetChild: FileItem? = nodes[idx].children![childIdx]
+                        
+                        action(&nodes[idx], &targetChild, childIdx)
+                        
+                        if let valid = targetChild {
+                            nodes[idx].children![childIdx] = valid
+                        } else {
+                            nodes[idx].children!.remove(at: childIdx)
+                        }
+                        return
+                    }
+                }
+                
+                // traverse deeper into the tree
+                if nodes[idx].children != nil {
+                    applyAction(nodes: &nodes[idx].children!, indices: indices.dropFirst())
+                }
+            }
+        }
+        
+        applyAction(nodes: &items, indices: ArraySlice(indexPath))
+    }
+
+    // helper function to extract child by path
+    private func getChild(at path: [Int], from node: FileItem) -> FileItem {
+        var current = node
+        for index in path {
+            current = current.children![index]
+        }
+        return current
+    }
+    
+    // helper function to mutate nested structs
+    private func setChild(_ child: FileItem, at path: [Int], in node: inout FileItem) {
+        if path.count == 1 {
+            node.children?[path[0]] = child
+        } else {
+            var nextNode = node.children![path[0]]
+            setChild(child, at: Array(path.dropFirst()), in: &nextNode)
+            node.children?[path[0]] = nextNode
+        }
+    }
+    
+    // helper function to delete nested structs
+    private func removeChild(at path: [Int], in node: inout FileItem) {
+        if path.count == 1 {
+            node.children?.remove(at: path[0])
+        } else {
+            var nextNode = node.children![path[0]]
+            removeChild(at: Array(path.dropFirst()), in: &nextNode)
+            node.children?[path[0]] = nextNode
+        }
+    }
+    
+    
 }

@@ -6,7 +6,7 @@ struct CompressionListView: View {
     @Binding var selectedFileID: UUID?
     
     var body: some View {
-        if(viewModel.items.isEmpty) {
+        if viewModel.items.isEmpty {
             ContentUnavailableView(
                 "No files selected",
                 systemImage: "tray.and.arrow.down.fill",
@@ -26,18 +26,17 @@ struct CompressionListView: View {
                     VStack(alignment: .leading) {
                         Text(item.url.lastPathComponent)
                             .font(.body)
-                        if let children = item.children {
-                            if(children.count > 0) {
-                                Text("\(item.children?.count ?? 0) files inside")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                            }
+                        
+                        // safe display of children count
+                        if let children = item.children, !children.isEmpty {
+                            Text("\(children.count) files inside")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
                         }
                     }
                     
                     Spacer()
                     
-                    // SAVINGS BAR
                     if let percentage = item.savingPercentage {
                         SavingsBarView(percentage: percentage)
                     }
@@ -48,13 +47,14 @@ struct CompressionListView: View {
                 .tag(item.id)
             }
             .onDeleteCommand {
+                // delete root level items
                 guard let selectedID = selectedFileID,
                       let index = viewModel.items.firstIndex(where: { $0.id == selectedID }) else { return }
                 
                 viewModel.removeItems(at: IndexSet(integer: index))
             }
             .onKeyPress(.escape) {
-                // clear selection on escape key press
+                // clear selection
                 selectedFileID = nil
                 return .handled
             }
