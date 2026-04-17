@@ -13,9 +13,8 @@ struct CompressView: View {
     @AppStorage("iterationsLarge") private var iterationsLarge: Int = 5
     @AppStorage("maxTokens") private var maxTokens: Int = 10000
     @AppStorage("threads") private var threads: Int = 4
-    
+    @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
     @Environment(\.modelContext) private var modelContext
-    
     
     private var descriptionText: Text {
         if UIDevice.current.userInterfaceIdiom == .pad {
@@ -24,7 +23,7 @@ struct CompressView: View {
             return Text("Use the add button to select files to compress.")
         }
     }
-
+    
     var body: some View {
         NavigationStack {
             if viewModel.items.isEmpty {
@@ -33,6 +32,10 @@ struct CompressView: View {
                     systemImage: "tray.and.arrow.down.fill",
                     description: descriptionText
                 )
+                .dropDestination(for: URL.self) { items, location in
+                    viewModel.addFiles(urls: items)
+                    return true
+                }
                 .navigationTitle("Chisel")
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -58,25 +61,22 @@ struct CompressView: View {
                 List {
                     Section("Files") {
                         ForEach(viewModel.items) { item in
-                            // push file inspector on tap
-                            NavigationLink(destination: FileInspectorView(file: item, allLogs: viewModel.logs)) {
-                                HStack {
-                                    Image(systemName: item.typeIconName)
-                                        .foregroundColor(.blue)
-                                    VStack(alignment: .leading) {
-                                        Text(item.url.lastPathComponent)
-                                            .font(.headline)
-                                        Text(viewModel.formatBytes(item.size))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                            // render disclosure group if there are children
+                            if let children = item.children, !children.isEmpty {
+                                DisclosureGroup {
+                                    ForEach(children) { child in
+                                        fileRow(for: child)
                                     }
-                                    Spacer()
-                                    StatusBadgeView(status: item.status)
+                                } label: {
+                                    fileRow(for: item)
                                 }
+                            } else {
+                                // standard row for files without children
+                                fileRow(for: item)
                             }
                         }
                         .onDelete { indexSet in
-                            viewModel.items.remove(atOffsets: indexSet)
+                            viewModel.removeItems(at: indexSet)
                         }
                     }
                 }
@@ -101,6 +101,10 @@ struct CompressView: View {
                         .disabled(viewModel.isProcessing)
                     }
                 }
+                .dropDestination(for: URL.self) { items, location in
+                    viewModel.addFiles(urls: items)
+                    return true
+                }
                 // sheet definition for global logs
                 .sheet(isPresented: $showGlobalLogs) {
                     NavigationStack {
@@ -120,6 +124,7 @@ struct CompressView: View {
                                 iterationsLarge: iterationsLarge,
                                 maxTokens: maxTokens,
                                 threads: threads,
+                                hideUnsupported: hideUnsupported,
                                 context: modelContext
                             )
                         }
@@ -139,13 +144,42 @@ struct CompressView: View {
             }
         }
     }
+    
+    // reusable viewbuilder for file rows
+    @ViewBuilder
+    private func fileRow(for item: FileItem) -> some View {
+        NavigationLink(destination: FileInspectorView(file: item, allLogs: viewModel.logs)) {
+            HStack {
+                Image(systemName: item.typeIconName)
+                    .foregroundColor(.blue)
+                
+                VStack(alignment: .leading) {
+                    Text(item.url.lastPathComponent)
+                        .font(.headline)
+                    
+                    if let children = item.children, children.count > 0 {
+                        Text("\(children.count) files inside")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text(viewModel.formatBytes(item.size))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                
+                Spacer()
+                
+                StatusBadgeView(status: item.status)
+            }
+        }
+    }
 }
-
 
 #Preview("Light mode") {
     CompressView()
         .modelContainer(for: CompressionStat.self, inMemory: true)
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
 }
 
 #Preview("Dark mode") {

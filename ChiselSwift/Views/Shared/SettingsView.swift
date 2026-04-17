@@ -8,7 +8,8 @@ struct SettingsView: View {
     @AppStorage("preserveMetadata") private var preserveMetadata: Bool = true
     @AppStorage("verifyChecksums") private var verifyChecksums: Bool = false
     @AppStorage("threads") private var threads: Int = max(1, ProcessInfo.processInfo.activeProcessorCount / 2)
-    
+    @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
+
     private let maxSystemThreads = max(1, ProcessInfo.processInfo.activeProcessorCount)
     
     var body: some View {
@@ -99,6 +100,13 @@ struct SettingsView: View {
                     Text("""
                     Perform a check after each compression to ensure the content of the modified file perfectly matches the original file. Guarantees that your files don't degrade in quality, but makes processing slower.
                     """)
+                }
+                Section {
+                    Toggle("Hide unsupported subfiles", isOn: $hideUnsupported)
+                } footer : {
+                    Text("""
+                        Many container files, such as PDFs, contain a lot of internal files that can't be processed. This option hides these files.
+                        """)
                 }
                 
                 // MARK: - System Resources

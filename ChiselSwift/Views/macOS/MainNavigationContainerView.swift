@@ -27,7 +27,7 @@ struct MainNavigationContainerView: View {
     @AppStorage("iterationsLarge") private var iterationsLarge: Int = 5
     @AppStorage("maxTokens") private var maxTokens: Int = 10000
     @AppStorage("threads") private var threads: Int = max(1, ProcessInfo.processInfo.activeProcessorCount / 2)
-    
+    @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
     @Environment(\.modelContext) private var modelContext
     
     var body: some View {
@@ -85,6 +85,7 @@ struct MainNavigationContainerView: View {
                                             iterationsLarge: iterationsLarge,
                                             maxTokens: maxTokens,
                                             threads: threads,
+                                            hideUnsupported: hideUnsupported,
                                             context: modelContext
                                         )
                                     }
@@ -111,6 +112,10 @@ struct MainNavigationContainerView: View {
                         case .failure(let error):
                             print("file import failed: \(error)")
                         }
+                    }
+                    .dropDestination(for: URL.self) { items, location in
+                        viewModel.addFiles(urls: items)
+                        return true
                     }
             case .stats:
                 StatsDashboardView()

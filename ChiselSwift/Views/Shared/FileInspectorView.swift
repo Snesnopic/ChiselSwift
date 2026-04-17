@@ -36,30 +36,7 @@ struct FileInspectorView: View {
                         }
                     }
                     
-                    VStack(alignment: .leading) {
-                        Text("Process log")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                        
-                        ScrollView {
-                            LazyVStack(alignment: .leading, spacing: 4) {
-                                if file.logs.isEmpty {
-                                    Text("No log data available")
-                                        .foregroundStyle(.secondary)
-                                } else {
-                                    ForEach(Array(file.logs.enumerated()), id: \.offset) { index, logLine in
-                                        Text(logLine)
-                                            .foregroundStyle(logLine.localizedCaseInsensitiveContains("ERROR") ? .red : .primary)
-                                    }
-                                }
-                            }
-                            .font(.system(.caption2, design: .monospaced))
-                            .frame(alignment: .leading)
-                            .padding(8)
-                            .background(.background)
-                            .cornerRadius(4)
-                        }
-                    }
+                    logTerminalView(logs: file.logs, title: "Process log")
                     
                     Spacer()
                 }
@@ -77,10 +54,7 @@ struct FileInspectorView: View {
                                 Text("No logs generated yet")
                                     .foregroundStyle(.secondary)
                             } else {
-                                ForEach(Array(allLogs.enumerated()), id: \.offset) { index, logLine in
-                                    Text(logLine)
-                                        .foregroundStyle(logLine.localizedCaseInsensitiveContains("ERROR") ? .red : .primary)
-                                }
+                                logTerminalView(logs: allLogs, title: nil)
                             }
                         }
                         .font(.system(.caption2, design: .monospaced))
@@ -92,6 +66,19 @@ struct FileInspectorView: View {
                     .padding(.horizontal)
                 }
             }
+        }
+        // export button only for macOS
+        .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: exportLogs) {
+                    Label("Export Logs", systemImage: "square.and.arrow.up")
+                }
+                .help("Export current logs to .txt")
+                // disabled if there are no logs to export
+                .disabled(file != nil ? file!.logs.isEmpty : allLogs.isEmpty)
+            }
+#endif
         }
     }
     
@@ -120,22 +107,71 @@ struct FileInspectorView: View {
         }
     }
     
+    @ViewBuilder
+        private func logTerminalView(logs: [String], title: String?) -> some View {
+            VStack(alignment: .leading) {
+                if let title = title {
+                    Text(title)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 4) {
+                        if logs.isEmpty {
+                            Text("No log data available")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            ForEach(Array(logs.enumerated()), id: \.offset) { index, logLine in
+                                Text(logLine)
+                                    .foregroundStyle(logLine.localizedCaseInsensitiveContains("error") ? .red : .primary)
+                            }
+                        }
+                    }
+                    .font(.system(.caption2, design: .monospaced))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(8)
+                    .background(.background)
+                    .cornerRadius(4)
+                }
+            }
+            .padding(.horizontal, title == nil ? 16 : 0)
+        }
+    
     private func formatSize(_ bytes: Int64) -> String {
         ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
     }
+    
+#if os(macOS)
+    private func exportLogs() {
+        // determine content and filename based on selection
+        let content = file?.logs.joined(separator: "\n") ?? self.allLogs.joined(separator: "\n")
+        let baseName = file?.url.deletingPathExtension().lastPathComponent ?? "chisel_global_logs"
+        let filename = "result_log_\(baseName).txt"
+        
+        let savePanel = NSSavePanel()
+        savePanel.allowedContentTypes = [.plainText]
+        savePanel.canCreateDirectories = true
+        savePanel.isExtensionHidden = false
+        savePanel.title = "Export Logs"
+        savePanel.message = "Choose where to save the log file"
+        savePanel.nameFieldStringValue = filename
+        
+        if savePanel.runModal() == .OK {
+            if let url = savePanel.url {
+                do {
+                    try content.write(to: url, atomically: true, encoding: .utf8)
+                    print("LOGS EXPORTED TO: \(url.path)")
+                } catch {
+                    print("FAILED TO EXPORT LOGS: \(error)")
+                }
+            }
+        }
+    }
+#endif
 }
 
-struct InfoRow: View {
-    let label: String
-    let value: String
-    var body: some View {
-        HStack {
-            Text(label).foregroundStyle(.secondary)
-            Spacer()
-            Text(value).bold()
-        }.font(.caption)
-    }
-}
+
 
 #Preview("Light Mode") {
     FileInspectorView(

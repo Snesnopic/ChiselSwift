@@ -12,6 +12,10 @@ struct CompressionListView: View {
                 systemImage: "tray.and.arrow.down.fill",
                 description: Text("Drag and drop files here, or use the add button to start compressing.")
             )
+            .dropDestination(for: URL.self) { items, location in
+                viewModel.addFiles(urls: items)
+                return true
+            }
         } else {
             List(viewModel.items, children: \.children, selection: $selectedFileID) { item in
                 HStack(spacing: 12) {
@@ -22,10 +26,12 @@ struct CompressionListView: View {
                     VStack(alignment: .leading) {
                         Text(item.url.lastPathComponent)
                             .font(.body)
-                        if item.children != nil {
-                            Text("\(item.children?.count ?? 0) files inside")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+                        if let children = item.children {
+                            if(children.count > 0) {
+                                Text("\(item.children?.count ?? 0) files inside")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                     
@@ -40,6 +46,21 @@ struct CompressionListView: View {
                 }
                 .opacity(item.status == .noGain ? 0.5 : 1.0)
                 .tag(item.id)
+            }
+            .onDeleteCommand {
+                guard let selectedID = selectedFileID,
+                      let index = viewModel.items.firstIndex(where: { $0.id == selectedID }) else { return }
+                
+                viewModel.removeItems(at: IndexSet(integer: index))
+            }
+            .onKeyPress(.escape) {
+                // clear selection on escape key press
+                selectedFileID = nil
+                return .handled
+            }
+            .dropDestination(for: URL.self) { items, location in
+                viewModel.addFiles(urls: items)
+                return true
             }
         }
     }
