@@ -4,7 +4,7 @@ import SwiftData
 struct CompressionListView: View {
     @Bindable var viewModel: ChiselViewModel
     @Binding var selectedFileID: UUID?
-    
+
     var body: some View {
         if viewModel.items.isEmpty {
             ContentUnavailableView(
@@ -12,7 +12,7 @@ struct CompressionListView: View {
                 systemImage: "tray.and.arrow.down.fill",
                 description: Text("Drag and drop files here, or use the add button to start compressing.")
             )
-            .dropDestination(for: URL.self) { items, location in
+            .dropDestination(for: URL.self) { items, _ in
                 viewModel.addFiles(urls: items)
                 return true
             }
@@ -22,11 +22,11 @@ struct CompressionListView: View {
                     Image(systemName: item.typeIconName)
                         .foregroundStyle(.blue)
                         .frame(width: 20)
-                    
+
                     VStack(alignment: .leading) {
                         Text(item.url.lastPathComponent)
                             .font(.body)
-                        
+
                         // safe display of children count
                         if let children = item.children, !children.isEmpty {
                             Text("\(children.count) files inside")
@@ -34,13 +34,13 @@ struct CompressionListView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    
+
                     Spacer()
-                    
+
                     if let percentage = item.savingPercentage {
                         SavingsBarView(percentage: percentage)
                     }
-                    
+
                     StatusBadgeView(status: item.status)
                 }
                 .opacity(item.status == .noGain ? 0.5 : 1.0)
@@ -50,7 +50,7 @@ struct CompressionListView: View {
                 // delete root level items
                 guard let selectedID = selectedFileID,
                       let index = viewModel.items.firstIndex(where: { $0.id == selectedID }) else { return }
-                
+
                 viewModel.removeItems(at: IndexSet(integer: index))
             }
             .onKeyPress(.escape) {
@@ -58,7 +58,7 @@ struct CompressionListView: View {
                 selectedFileID = nil
                 return .handled
             }
-            .dropDestination(for: URL.self) { items, location in
+            .dropDestination(for: URL.self) { items, _ in
                 viewModel.addFiles(urls: items)
                 return true
             }
@@ -68,13 +68,13 @@ struct CompressionListView: View {
 
 struct SavingsBarView: View {
     let percentage: Double
-    
+
     var body: some View {
         VStack(alignment: .trailing, spacing: 2) {
             Text(String(format: "-%.1f%%", percentage))
                 .font(.caption2).monospacedDigit()
                 .foregroundStyle(.green)
-            
+
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(.gray.opacity(0.2))

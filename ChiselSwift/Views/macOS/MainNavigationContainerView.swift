@@ -13,15 +13,15 @@ enum NavigationSection: String, Hashable {
 struct MainNavigationContainerView: View {
     @State private var viewModel = ChiselViewModel()
     @State private var columnVisibility = NavigationSplitViewVisibility.all
-    
+
     // navigation state
     @State private var selectedSection: NavigationSection? = .compression
-    
+
     // content state
     @State private var selectedFileID: UUID?
     @State private var isInspectorPresented = false
     @State private var isImporterPresented = false
-    
+
     // app settings for compression
     @AppStorage("iterations") private var iterations: Int = 15
     @AppStorage("iterationsLarge") private var iterationsLarge: Int = 5
@@ -29,7 +29,7 @@ struct MainNavigationContainerView: View {
     @AppStorage("threads") private var threads: Int = max(1, ProcessInfo.processInfo.activeProcessorCount / 2)
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
     @Environment(\.modelContext) private var modelContext
-    
+
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             // sidebar
@@ -49,7 +49,7 @@ struct MainNavigationContainerView: View {
                 }
             }
             .navigationTitle("Chisel")
-            
+
         } detail: {
             switch selectedSection {
             case .compression:
@@ -70,7 +70,7 @@ struct MainNavigationContainerView: View {
                             }
                             .disabled(viewModel.isProcessing)
                         }
-                        if (!viewModel.items.isEmpty) {
+                        if !viewModel.items.isEmpty {
                             ToolbarItem(placement: .automatic) {
                                 Button(action: { viewModel.stopProcessing() }) {
                                     Label("Stop", systemImage: "stop.fill")
@@ -113,7 +113,7 @@ struct MainNavigationContainerView: View {
                             print("file import failed: \(error)")
                         }
                     }
-                    .dropDestination(for: URL.self) { items, location in
+                    .dropDestination(for: URL.self) { items, _ in
                         viewModel.addFiles(urls: items)
                         return true
                     }
@@ -130,7 +130,7 @@ struct MainNavigationContainerView: View {
         .inspector(isPresented: Binding(get: {
             return isInspectorPresented && selectedSection == .compression
         }, set: { _ in
-            
+
         }), content: {
             FileInspectorView(file: viewModel.items.first(where: { $0.id == selectedFileID }),
                               allLogs: viewModel.logs

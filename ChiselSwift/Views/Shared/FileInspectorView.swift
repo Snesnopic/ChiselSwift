@@ -5,29 +5,29 @@ import UniformTypeIdentifiers
 struct FileInspectorView: View {
     let file: FileItem?
     let allLogs: [String]
-    
+
     var body: some View {
         Group {
             if let file = file {
                 VStack(alignment: .leading, spacing: 20) {
-                    
+
                     VStack(alignment: .leading, spacing: 12) {
                         previewView(for: file)
-                        
+
                         HStack {
                             Image(systemName: file.typeIconName)
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 24, height: 24)
                                 .foregroundColor(.blue)
-                            
+
                             Text(file.url.lastPathComponent)
                                 .font(.headline)
                         }
                     }
-                    
+
                     Divider()
-                    
+
                     VStack(alignment: .leading, spacing: 8) {
                         InfoRow(label: "Format", value: file.originalExtension.uppercased())
                         InfoRow(label: "Original size", value: formatSize(file.size))
@@ -35,9 +35,9 @@ struct FileInspectorView: View {
                             InfoRow(label: "New size", value: formatSize(after))
                         }
                     }
-                    
+
                     logTerminalView(logs: file.logs, title: "Process log")
-                    
+
                     Spacer()
                 }
                 .padding()
@@ -47,7 +47,7 @@ struct FileInspectorView: View {
                     Text("Global logs")
                         .font(.headline)
                         .padding([.top, .horizontal])
-                    
+
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 4) {
                             if allLogs.isEmpty {
@@ -81,7 +81,7 @@ struct FileInspectorView: View {
 #endif
         }
     }
-    
+
     // dynamically generate a preview if the file is a supported image
     @ViewBuilder
     private func previewView(for file: FileItem) -> some View {
@@ -106,7 +106,7 @@ struct FileInspectorView: View {
             .padding(.bottom, 8)
         }
     }
-    
+
     @ViewBuilder
         private func logTerminalView(logs: [String], title: String?) -> some View {
             VStack(alignment: .leading) {
@@ -115,14 +115,14 @@ struct FileInspectorView: View {
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
-                
+
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 4) {
                         if logs.isEmpty {
                             Text("No log data available")
                                 .foregroundStyle(.secondary)
                         } else {
-                            ForEach(Array(logs.enumerated()), id: \.offset) { index, logLine in
+                            ForEach(Array(logs.enumerated()), id: \.offset) { _, logLine in
                                 Text(logLine)
                                     .foregroundStyle(logLine.localizedCaseInsensitiveContains("error") ? .red : .primary)
                             }
@@ -137,18 +137,18 @@ struct FileInspectorView: View {
             }
             .padding(.horizontal, title == nil ? 16 : 0)
         }
-    
+
     private func formatSize(_ bytes: Int64) -> String {
         ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
     }
-    
+
 #if os(macOS)
     private func exportLogs() {
         // determine content and filename based on selection
         let content = file?.logs.joined(separator: "\n") ?? self.allLogs.joined(separator: "\n")
         let baseName = file?.url.deletingPathExtension().lastPathComponent ?? "chisel_global_logs"
         let filename = "result_log_\(baseName).txt"
-        
+
         let savePanel = NSSavePanel()
         savePanel.allowedContentTypes = [.plainText]
         savePanel.canCreateDirectories = true
@@ -156,7 +156,7 @@ struct FileInspectorView: View {
         savePanel.title = "Export Logs"
         savePanel.message = "Choose where to save the log file"
         savePanel.nameFieldStringValue = filename
-        
+
         if savePanel.runModal() == .OK {
             if let url = savePanel.url {
                 do {
@@ -170,8 +170,6 @@ struct FileInspectorView: View {
     }
 #endif
 }
-
-
 
 #Preview("Light Mode") {
     FileInspectorView(

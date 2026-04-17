@@ -5,17 +5,17 @@ import UniformTypeIdentifiers
 struct CompressView: View {
     @State private var viewModel = ChiselViewModel()
     @State private var isImporterPresented = false
-    
+
     // state for global logs modal
     @State private var showGlobalLogs = false
-    
+
     @AppStorage("iterations") private var iterations: Int = 15
     @AppStorage("iterationsLarge") private var iterationsLarge: Int = 5
     @AppStorage("maxTokens") private var maxTokens: Int = 10000
     @AppStorage("threads") private var threads: Int = 4
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
     @Environment(\.modelContext) private var modelContext
-    
+
     private var descriptionText: Text {
         if UIDevice.current.userInterfaceIdiom == .pad {
             return Text("Drag and drop files here, or use the add button to start compressing.")
@@ -23,7 +23,7 @@ struct CompressView: View {
             return Text("Use the add button to select files to compress.")
         }
     }
-    
+
     var body: some View {
         NavigationStack {
             if viewModel.items.isEmpty {
@@ -32,7 +32,7 @@ struct CompressView: View {
                     systemImage: "tray.and.arrow.down.fill",
                     description: descriptionText
                 )
-                .dropDestination(for: URL.self) { items, location in
+                .dropDestination(for: URL.self) { items, _ in
                     viewModel.addFiles(urls: items)
                     return true
                 }
@@ -89,7 +89,7 @@ struct CompressView: View {
                         .disabled(viewModel.isProcessing)
                     }
                 }
-                .dropDestination(for: URL.self) { items, location in
+                .dropDestination(for: URL.self) { items, _ in
                     viewModel.addFiles(urls: items)
                     return true
                 }
@@ -127,12 +127,12 @@ struct CompressView: View {
                             .padding()
                     }
                     .disabled(!viewModel.canStartProcessing)
-                    
+
                 }
             }
         }
     }
-    
+
     // handles deep n-level rendering for nested archives
     private func recursiveFileNode(_ item: FileItem) -> AnyView {
         if let children = item.children, !children.isEmpty {
@@ -157,11 +157,11 @@ struct CompressView: View {
             HStack {
                 Image(systemName: item.typeIconName)
                     .foregroundColor(.blue)
-                
+
                 VStack(alignment: .leading) {
                     Text(item.url.lastPathComponent)
                         .font(.headline)
-                    
+
                     if let children = item.children, children.isEmpty {
                         Text("\(children.count) files inside")
                             .font(.caption2)
@@ -172,9 +172,9 @@ struct CompressView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 StatusBadgeView(status: item.status)
             }
         }

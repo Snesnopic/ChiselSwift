@@ -11,42 +11,42 @@ final class ChiselViewModel {
     var items: [FileItem] = []
     var logs: [String] = []
     var isProcessing = false
-    
+
     // check if there are files ready for compression
     var canStartProcessing: Bool {
         !isProcessing && !items.isEmpty && items.contains { $0.status == .pending }
     }
-    
+
     // handles security scoped file import
     func addFiles(urls: [URL]) {
         print("IMPORTING \(urls.count) FILES")
         let tempDirectory = FileManager.default.temporaryDirectory
-        
+
         for url in urls {
             guard url.startAccessingSecurityScopedResource() else {
                 print("FAILED TO ACCESS SECURITY SCOPED RESOURCE: \(url.lastPathComponent)")
                 continue
             }
-            
+
             let destinationURL = tempDirectory.appendingPathComponent(url.lastPathComponent)
-            
+
             do {
                 if FileManager.default.fileExists(atPath: destinationURL.path) {
                     try FileManager.default.removeItem(at: destinationURL)
                 }
-                
+
                 try FileManager.default.copyItem(at: url, to: destinationURL)
-                
+
                 let attr = try FileManager.default.attributesOfItem(atPath: destinationURL.path)
                 let size = attr[.size] as? Int64 ?? 0
-                
+
                 let item = FileItem(
                     url: destinationURL,
                     status: .pending,
                     size: size,
                     originalExtension: destinationURL.pathExtension.lowercased()
                 )
-                
+
                 if !items.contains(where: { $0.url == destinationURL }) {
                     items.append(item)
                     print("ADDED FILE: \(destinationURL.lastPathComponent)")
@@ -54,41 +54,41 @@ final class ChiselViewModel {
             } catch {
                 print("ERROR PREPARING FILE: \(error)")
             }
-            
+
             url.stopAccessingSecurityScopedResource()
         }
     }
-    
+
     // coordinates the chiselkit engine
     func startProcessing(iterations: Int, iterationsLarge: Int, maxTokens: Int, threads: Int, hideUnsupported: Bool, context: ModelContext) async {
         guard !items.isEmpty else { return }
-        
+
         // filter to process only pending items
         let pendingItems = items.filter { $0.status == .pending }
         guard !pendingItems.isEmpty else { return }
-        
+
         let urlsToProcess = pendingItems.map { $0.url }
         isProcessing = true
         print("STARTING BATCH PROCESSING WITH \(iterations) ITERATIONS, \(maxTokens) TOKENS, \(threads) THREADS")
-        
+
         let chisel = Chisel()
-        
+
         await chisel.configure(
             iterations: UInt32(iterations),
             iterationsLarge: UInt32(iterationsLarge),
             maxTokens: UInt32(maxTokens),
             threads: UInt32(threads)
         )
-        
+
         var pendingStats: [CompressionStat] = []
-        
+
         // map to track individual execution times
         var startTimes: [String: CFAbsoluteTime] = [:]
-        
+
         for await event in await chisel.process(files: urlsToProcess) {
             print("RAW EVENT FROM CHISEL: \(event)")
             switch event {
-                
+
             case .analyzeStart(let path):
                 updateItem(for: path) { parent, child, _ in
                     let msg = "ANALYZING CONTAINER"
@@ -101,7 +101,7 @@ final class ChiselViewModel {
                         logs.append("\(msg): \(parent.url.lastPathComponent)")
                     }
                 }
-                
+
             case .analyzeComplete(let path, let extracted, let numChildren):
                 if extracted {
                     updateItem(for: path) { parent, child, _ in
@@ -114,7 +114,7 @@ final class ChiselViewModel {
                         }
                     }
                 }
-                
+
             case .start(let path):
                 startTimes[path] = CFAbsoluteTimeGetCurrent()
                 updateItem(for: path) { parent, child, _ in
@@ -122,7 +122,7 @@ final class ChiselViewModel {
                         child?.status = .processing
                         child?.logs.append("STARTED EXTRACTED FILE")
                         parent.status = .processing
-                        
+
                         // propagate to parent and global
                         let msg = "[CHILD] STARTED: \(child!.url.lastPathComponent)"
                         parent.logs.append(msg)
@@ -133,13 +133,13 @@ final class ChiselViewModel {
                         logs.append("STARTED PROCESSING: \(parent.url.lastPathComponent)")
                     }
                 }
-                
+
             case .finish(let path, let sizeBefore, let sizeAfter, let replaced):
-                updateItem(for: path) { parent, child, index in
+                updateItem(for: path) { parent, child, _ in
                     let targetName = child != nil ? child!.url.lastPathComponent : parent.url.lastPathComponent
                     let successMsg = "SUCCESSFULLY COMPRESSED: \(targetName) (saved \(formatBytes(Int64(sizeBefore - sizeAfter))))"
                     let noGainMsg = "NO GAIN: \(targetName)"
-                    
+
                     if let unwrappedChild = child {
                         var localChild = unwrappedChild
                         localChild.size = Int64(sizeBefore)
@@ -163,7 +163,7 @@ final class ChiselViewModel {
                             parent.status = .completed(parent.url)
                             parent.logs.append(successMsg)
                             logs.append(successMsg) // global log
-                            
+
                             // save stats only for parent
                             let duration = CFAbsoluteTimeGetCurrent() - (startTimes[path] ?? CFAbsoluteTimeGetCurrent())
                             let stat = CompressionStat(
@@ -180,12 +180,12 @@ final class ChiselViewModel {
                         }
                     }
                 }
-                
+
             case .error(let path, let message):
                 updateItem(for: path) { parent, child, _ in
                     let targetName = child != nil ? child!.url.lastPathComponent : parent.url.lastPathComponent
                     let errorMsg = "ERROR [\(targetName)]: \(message)"
-                    
+
                     if child != nil {
                         child?.status = .error(message)
                         child?.logs.append(errorMsg)
@@ -197,14 +197,14 @@ final class ChiselViewModel {
                         logs.append(errorMsg)
                     }
                 }
-                
+
             case .skipped(let path, let reason):
                 updateItem(for: path) { parent, child, _ in
                     let targetName = child != nil ? child!.url.lastPathComponent : parent.url.lastPathComponent
                     let skipMsg = "SKIPPED [\(targetName)]: \(reason)"
                     let lowerReason = reason.lowercased()
                     let computedStatus: FileItem.ProcessingStatus = (lowerReason.contains("no gain") || lowerReason.contains("size")) ? .noGain : .skipped
-                    
+
                     if child != nil {
                         parent.status = .processing
                         // discard unsupported child files if flag is active
@@ -222,7 +222,7 @@ final class ChiselViewModel {
                         logs.append(skipMsg)
                     }
                 }
-                
+
             case .finalizeStart(let path):
                 updateItem(for: path) { parent, child, _ in
                     let msg = "RE-ASSEMBLING CONTAINER..."
@@ -233,23 +233,23 @@ final class ChiselViewModel {
                         logs.append("\(parent.url.lastPathComponent) - \(msg)")
                     }
                 }
-                
+
             case .log(let tag, let message):
                 // global logs that cannot be mapped to a specific path
                 logs.append("[\(tag)] \(message)")
                 print("CHISELKIT LOG: [\(tag)] \(message)")
             }
         }
-        
+
         for stat in pendingStats {
             context.insert(stat)
         }
         try? context.save()
-        
+
         isProcessing = false
         print("BATCH PROCESSING COMPLETED")
     }
-    
+
     // halt engine execution
     func stopProcessing() {
         let chisel = Chisel()
@@ -259,14 +259,14 @@ final class ChiselViewModel {
             print("PROCESSING STOPPED BY USER")
         }
     }
-    
+
     // reset state
     func clearItems() {
         items.removeAll()
         logs.removeAll()
         print("CLEARED ALL ITEMS AND LOGS")
     }
-    
+
     // utilities
     func formatBytes(_ bytes: Int64) -> String {
         let formatter = ByteCountFormatter()
@@ -274,76 +274,75 @@ final class ChiselViewModel {
         formatter.countStyle = .file
         return formatter.string(fromByteCount: bytes)
     }
-    
+
     func removeItems(at offsets: IndexSet) {
         let indicesToRemove = offsets.filter { index in
             let item = items[index]
             // check if item or any of its children are currently processing
             let isProcessing = item.status == .processing || (item.children?.contains { $0.status == .processing } ?? false)
-            
+
             if isProcessing {
                 print("PREVENTED DELETION OF PROCESSING FILE: \(item.url.lastPathComponent)")
             }
-            
+
             return !isProcessing
         }
-        
+
         items.remove(atOffsets: IndexSet(indicesToRemove))
     }
-    
+
     // recursively find the exact index path to the deepest matching parent
     private func findIndexPath(for path: String, in nodes: [FileItem]) -> [Int]? {
         // exact match
         if let idx = nodes.firstIndex(where: { $0.url.path == path }) {
             return [idx]
         }
-        
+
         // post-order traversal to find the deepest valid parent first
         for idx in 0..<nodes.count {
             if let children = nodes[idx].children, let childPath = findIndexPath(for: path, in: children) {
                 return [idx] + childPath
             }
         }
-        
+
         let pathURL = URL(fileURLWithPath: path)
         let folderName = pathURL.deletingLastPathComponent().lastPathComponent
-        
+
         // check if current node is the parent using strict folder boundary matching
         for idx in 0..<nodes.count {
             let parentURL = nodes[idx].url
             let baseName = parentURL.deletingPathExtension().lastPathComponent
-            
+
             if !baseName.isEmpty {
                 // strict matching against chisel c++ temporary directory formats
                 let isArchiveFolder = folderName.hasPrefix("archive_\(baseName)_")
                 let isExtractionFolder = folderName.hasPrefix("\(baseName)-")
                 let isExactFolder = folderName == baseName
-                
+
                 if isArchiveFolder || isExtractionFolder || isExactFolder {
                     return [idx]
                 }
             }
         }
-        
+
         return nil
     }
 
-    
     // route event to parent or child based on path using n-level recursion
     private func updateItem(for path: String, action: (inout FileItem, inout FileItem?, Int) -> Void) {
         guard let indexPath = findIndexPath(for: path, in: items), !indexPath.isEmpty else { return }
-        
+
         func applyAction(nodes: inout [FileItem], indices: ArraySlice<Int>) {
             let idx = indices.first!
-            
+
             if indices.count == 1 {
                 if nodes[idx].url.path == path {
                     // exact match at root level
                     var dummyParent = nodes[idx]
                     var targetChild: FileItem? = nodes[idx]
-                    
+
                     action(&dummyParent, &targetChild, idx)
-                    
+
                     if let valid = targetChild {
                         nodes[idx] = valid
                     } else {
@@ -354,7 +353,7 @@ final class ChiselViewModel {
                     if nodes[idx].children == nil {
                         nodes[idx].children = []
                     }
-                    
+
                     let childURL = URL(fileURLWithPath: path)
                     var newChild: FileItem? = FileItem(
                         url: childURL,
@@ -362,9 +361,9 @@ final class ChiselViewModel {
                         size: 0,
                         originalExtension: childURL.pathExtension.lowercased()
                     )
-                    
+
                     action(&nodes[idx], &newChild, nodes[idx].children?.count ?? 0)
-                    
+
                     if let valid = newChild {
                         nodes[idx].children!.append(valid)
                     }
@@ -375,9 +374,9 @@ final class ChiselViewModel {
                     let childIdx = indices.dropFirst().first!
                     if nodes[idx].children![childIdx].url.path == path {
                         var targetChild: FileItem? = nodes[idx].children![childIdx]
-                        
+
                         action(&nodes[idx], &targetChild, childIdx)
-                        
+
                         if let valid = targetChild {
                             nodes[idx].children![childIdx] = valid
                         } else {
@@ -386,14 +385,14 @@ final class ChiselViewModel {
                         return
                     }
                 }
-                
+
                 // traverse deeper into the tree
                 if nodes[idx].children != nil {
                     applyAction(nodes: &nodes[idx].children!, indices: indices.dropFirst())
                 }
             }
         }
-        
+
         applyAction(nodes: &items, indices: ArraySlice(indexPath))
     }
 
@@ -405,7 +404,7 @@ final class ChiselViewModel {
         }
         return current
     }
-    
+
     // helper function to mutate nested structs
     private func setChild(_ child: FileItem, at path: [Int], in node: inout FileItem) {
         if path.count == 1 {
@@ -416,7 +415,7 @@ final class ChiselViewModel {
             node.children?[path[0]] = nextNode
         }
     }
-    
+
     // helper function to delete nested structs
     private func removeChild(at path: [Int], in node: inout FileItem) {
         if path.count == 1 {
@@ -427,6 +426,5 @@ final class ChiselViewModel {
             node.children?[path[0]] = nextNode
         }
     }
-    
-    
+
 }

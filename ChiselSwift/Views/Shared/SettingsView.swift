@@ -11,7 +11,7 @@ struct SettingsView: View {
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
 
     private let maxSystemThreads = max(1, ProcessInfo.processInfo.activeProcessorCount)
-    
+
     var body: some View {
         NavigationStack {
             Form {
@@ -29,7 +29,7 @@ struct SettingsView: View {
                             step: 1
                         )
                     }
-                    
+
                     VStack(alignment: .leading) {
                         HStack {
                             Text("Iterations on large files")
@@ -77,13 +77,13 @@ struct SettingsView: View {
                         .opacity((maxTokens > 10000) ? 1 : 0)
                         .foregroundStyle(.yellow)
                     }
-                    
+
                 } footer: {
                     Text("""
                     Amount of tokens used for flexigif compression. This affects GIF files.
                     """)
                 }
-                
+
                 // MARK: - General Options
                 Section {
                     Toggle("Preserve file metadata", isOn: $preserveMetadata)
@@ -103,12 +103,12 @@ struct SettingsView: View {
                 }
                 Section {
                     Toggle("Hide unsupported subfiles", isOn: $hideUnsupported)
-                } footer : {
+                } footer: {
                     Text("""
                         Many container files, such as PDFs, contain a lot of internal files that can't be processed. This option hides these files.
                         """)
                 }
-                
+
                 // MARK: - System Resources
                 Section {
                     VStack(alignment: .leading) {
@@ -130,7 +130,7 @@ struct SettingsView: View {
                         .opacity((threads == maxSystemThreads) ? 1 : 0)
                         .foregroundStyle(.yellow)
                     }
-                } header : {
+                } header: {
                     Text("System resources")
                 } footer: {
                     Text("How many files to process in parallel. More threads will use more CPU but can also make the system unresponsive until all files are processed.")

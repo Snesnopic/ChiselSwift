@@ -3,7 +3,7 @@ import SwiftData
 
 struct AboutView: View {
     private let libraryVersion = "1.4.1"
-    
+
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
     }
@@ -12,31 +12,31 @@ struct AboutView: View {
     }
     var body: some View {
         VStack(spacing: 24) {
-            
+
             AppIconView()
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 80, height: 80)
                 .foregroundColor(.blue)
-            
+
             VStack(spacing: 4) {
                 Text("Chisel")
                     .font(.system(size: 28, weight: .bold))
-                
+
                 Text("Version \(appVersion)")
                     .font(.body)
                 Text("Chisel \(libraryVersion)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            
+
             VStack(spacing: 12) {
                 Link("Chisel engine", destination: URL(string: "https://github.com/Snesnopic/chisel")!)
                 Link("Chisel GUI", destination: URL(string: "https://github.com/Snesnopic/ChiselSwift")!)
             }
             .font(.callout)
             .padding(.vertical, 8)
-            
+
             Text(copyrightString)
                 .font(.caption2)
                 .foregroundStyle(.tertiary)

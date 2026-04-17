@@ -4,7 +4,7 @@ import SwiftData
 @main
 struct ChiselApp: App {
     var body: some Scene {
-        
+
         WindowGroup {
             MainNavigationContainerView()
         }
@@ -37,7 +37,7 @@ extension Scene {
 
 struct AboutMenuButton: View {
     @Environment(\.openWindow) private var openWindow
-    
+
     var body: some View {
         Button("About Chisel") {
             openWindow(id: "about")

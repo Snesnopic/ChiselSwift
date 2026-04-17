@@ -8,12 +8,12 @@ struct MainNavigationContainerView: View {
                 .tabItem {
                     Label("Compress", systemImage: "rectangle.compress.vertical")
                 }
-            
+
             StatsDashboardView()
                 .tabItem {
                     Label("Statistics", systemImage: "chart.bar.xaxis")
                 }
-            
+
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gearshape")

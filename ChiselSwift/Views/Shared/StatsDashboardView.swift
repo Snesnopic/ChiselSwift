@@ -4,24 +4,24 @@ import Charts
 
 struct StatsDashboardView: View {
     @Query(sort: \CompressionStat.timestamp, order: .reverse) private var stats: [CompressionStat]
-    
+
     // global metrics
     private var totalSaved: Int64 {
         stats.reduce(0) { $0 + $1.savedBytes }
     }
-    
+
     private var totalFiles: Int {
         stats.count
     }
-    
+
     private var largestFile: Int64 {
         stats.max(by: { $0.originalSize < $1.originalSize })?.originalSize ?? 0
     }
-    
+
     private var biggestSave: Int64 {
         stats.max(by: { $0.savedBytes < $1.savedBytes })?.savedBytes ?? 0
     }
-    
+
     // chart aggregations
     private var savingsByExtension: [(ext: String, saved: Int64)] {
         let grouped = Dictionary(grouping: stats, by: { $0.fileExtension })
@@ -30,7 +30,7 @@ struct StatsDashboardView: View {
         }
         return mapped.sorted { $0.saved > $1.saved }
     }
-    
+
     var body: some View {
         NavigationStack {
             if stats.isEmpty {
@@ -44,13 +44,13 @@ struct StatsDashboardView: View {
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 32) {
-                        
+
                         // global counter section
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Total space saved")
                                 .font(.headline)
                                 .foregroundStyle(.secondary)
-                            
+
                             Text(totalSaved.formatBytes())
                                 .font(.system(size: 54, weight: .heavy, design: .rounded))
                                 .foregroundStyle(Color.green.gradient)
@@ -58,7 +58,7 @@ struct StatsDashboardView: View {
                         }
                         .padding(.horizontal)
                         .padding(.top, 16)
-                        
+
                         // highlights grid
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 16)], alignment: .leading) {
                             StatCardView(title: "Files processed", value: "\(totalFiles)", icon: "doc.on.doc", color: .blue)
@@ -66,15 +66,15 @@ struct StatsDashboardView: View {
                             StatCardView(title: "Biggest save", value: biggestSave.formatBytes(), icon: "arrow.down.right.circle", color: .purple)
                         }
                         .padding(.horizontal)
-                        
+
                         // charts section
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 300, maximum: 600), spacing: 24)], alignment: .center) {
-                            
+
                             // pie chart: savings by format
                             VStack(alignment: .leading) {
                                 Text("Savings by format")
                                     .font(.headline)
-                                
+
                                 Chart(savingsByExtension, id: \.ext) { item in
                                     SectorMark(
                                         angle: .value("Saved bytes", item.saved),
@@ -110,7 +110,7 @@ struct StatCardView: View {
     let value: String
     let icon: String
     let color: Color
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
