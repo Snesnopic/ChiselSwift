@@ -58,10 +58,6 @@ struct CompressionListView: View {
                 selectedFileID = nil
                 return .handled
             }
-            .dropDestination(for: URL.self) { items, _ in
-                viewModel.addFiles(urls: items)
-                return true
-            }
         }
     }
 }

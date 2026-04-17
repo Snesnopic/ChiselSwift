@@ -113,10 +113,6 @@ struct MainNavigationContainerView: View {
                             print("file import failed: \(error)")
                         }
                     }
-                    .dropDestination(for: URL.self) { items, _ in
-                        viewModel.addFiles(urls: items)
-                        return true
-                    }
             case .stats:
                 StatsDashboardView()
             case .settings:
@@ -135,6 +131,12 @@ struct MainNavigationContainerView: View {
             FileInspectorView(file: viewModel.items.first(where: { $0.id == selectedFileID }),
                               allLogs: viewModel.logs
             )
+        })
+        .if(selectedSection == .compression, transform: { view in
+            view.dropDestination(for: URL.self) { items, _ in
+                viewModel.addFiles(urls: items)
+                return true
+            }
         })
     }
 }

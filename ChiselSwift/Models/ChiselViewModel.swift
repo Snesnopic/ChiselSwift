@@ -134,7 +134,7 @@ final class ChiselViewModel {
                     }
                 }
 
-            case .finish(let path, let sizeBefore, let sizeAfter, let replaced):
+            case .finish(let path, let sizeBefore, let sizeAfter, _):
                 updateItem(for: path) { parent, child, _ in
                     let targetName = child != nil ? child!.url.lastPathComponent : parent.url.lastPathComponent
                     let successMsg = "SUCCESSFULLY COMPRESSED: \(targetName) (saved \(formatBytes(Int64(sizeBefore - sizeAfter))))"
