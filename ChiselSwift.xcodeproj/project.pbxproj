@@ -10,12 +10,14 @@
 		9D86508C2F8C2CE100A03D31 /* Chisel in Frameworks */ = {isa = PBXBuildFile; productRef = 9D86508B2F8C2CE100A03D31 /* Chisel */; };
 		9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D8650902F8C2D5200A03D31 /* libiconv.tbd */; };
 		9DDE60EC2F8CE4CA001CA9A1 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */; };
+		9DFE00212F92763800C4F91C /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 9DFE00202F92763800C4F91C /* .swiftlint.yml */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		9D86507C2F8C2CB700A03D31 /* ChiselSwift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChiselSwift.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D8650902F8C2D5200A03D31 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
 		9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		9DFE00202F92763800C4F91C /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -25,6 +27,7 @@
 				Info.plist,
 			);
 			platformFiltersByRelativePath = {
+				MenuBarProgressManager.swift = (macos, );
 				Views/iOS/CompressView.swift = (ios, );
 				Views/iOS/MainNavigationContainerView.swift = (ios, );
 				Views/macOS/CompressionListView.swift = (macos, );
@@ -59,6 +62,7 @@
 		9D8650732F8C2CB700A03D31 = {
 			isa = PBXGroup;
 			children = (
+				9DFE00202F92763800C4F91C /* .swiftlint.yml */,
 				9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */,
 				9DAF63452F8C3D1600B87EE5 /* ChiselSwift */,
 				9D86508F2F8C2D5200A03D31 /* Frameworks */,
@@ -90,6 +94,7 @@
 			buildConfigurationList = 9D8650872F8C2CB900A03D31 /* Build configuration list for PBXNativeTarget "ChiselSwift" */;
 			buildPhases = (
 				9D8650782F8C2CB700A03D31 /* Sources */,
+				9DFE00222F92765000C4F91C /* Run SwiftLint */,
 				9D8650792F8C2CB700A03D31 /* Frameworks */,
 				9D86507A2F8C2CB700A03D31 /* Resources */,
 			);
@@ -147,10 +152,32 @@
 		9D86507A2F8C2CB700A03D31 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				9DFE00212F92763800C4F91C /* .swiftlint.yml in Resources */,
 				9DDE60EC2F8CE4CA001CA9A1 /* Localizable.xcstrings in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		9DFE00222F92765000C4F91C /* Run SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			name = "Run SwiftLint";
+			shellPath = /bin/sh;
+			shellScript = (
+				"# Type a script or drag a script file from your workspace to insert its path.",
+				"if command -v swiftlint >/dev/null 2>&1",
+				"then",
+				"    swiftlint",
+				"else",
+				"    echo \"warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#installation for installation instructions.\"",
+				"fi",
+				"",
+				"",
+			);
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		9D8650782F8C2CB700A03D31 /* Sources */ = {
@@ -297,6 +324,7 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ChiselSwift/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Chisel;
@@ -341,6 +369,7 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ChiselSwift/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Chisel;
