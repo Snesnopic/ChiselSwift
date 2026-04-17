@@ -28,6 +28,8 @@ struct MainNavigationContainerView: View {
     @AppStorage("maxTokens") private var maxTokens: Int = 10000
     @AppStorage("threads") private var threads: Int = max(1, ProcessInfo.processInfo.activeProcessorCount / 2)
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
+    @AppStorage("recursiveFolderImport") private var recursiveFolderImport: Bool = true
+
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
@@ -71,28 +73,34 @@ struct MainNavigationContainerView: View {
                             .disabled(viewModel.isProcessing)
                         }
                         if !viewModel.items.isEmpty {
-                            ToolbarItem(placement: .automatic) {
-                                Button(action: { viewModel.stopProcessing() }) {
-                                    Label("Stop", systemImage: "stop.fill")
-                                }
-                                .disabled(!viewModel.isProcessing)
-                            }
+                            // combined start/stop button handling isStopping state
                             ToolbarItem(placement: .automatic) {
                                 Button(action: {
-                                    Task {
-                                        await viewModel.startProcessing(
-                                            iterations: iterations,
-                                            iterationsLarge: iterationsLarge,
-                                            maxTokens: maxTokens,
-                                            threads: threads,
-                                            hideUnsupported: hideUnsupported,
-                                            context: modelContext
-                                        )
+                                    if viewModel.isProcessing {
+                                        viewModel.stopProcessing()
+                                    } else {
+                                        Task {
+                                            await viewModel.startProcessing(
+                                                iterations: iterations,
+                                                iterationsLarge: iterationsLarge,
+                                                maxTokens: maxTokens,
+                                                threads: threads,
+                                                hideUnsupported: hideUnsupported,
+                                                context: modelContext
+                                            )
+                                        }
                                     }
                                 }) {
-                                    Label("Start", systemImage: "play.fill")
+                                    if viewModel.isStopping {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                    } else if viewModel.isProcessing {
+                                        Label("Stop", systemImage: "stop.fill")
+                                    } else {
+                                        Label("Start", systemImage: "play.fill")
+                                    }
                                 }
-                                .disabled(!viewModel.canStartProcessing)
+                                .disabled(viewModel.isStopping || (!viewModel.canStartProcessing && !viewModel.isProcessing))
                             }
                             ToolbarItem(placement: .automatic) {
                                 Button(action: { isInspectorPresented.toggle() }) {
@@ -103,12 +111,12 @@ struct MainNavigationContainerView: View {
                     }
                     .fileImporter(
                         isPresented: $isImporterPresented,
-                        allowedContentTypes: [.data],
+                        allowedContentTypes: [.data, .folder],
                         allowsMultipleSelection: true
                     ) { result in
                         switch result {
                         case .success(let urls):
-                            viewModel.addFiles(urls: urls)
+                            viewModel.addFiles(urls: urls, recursive: recursiveFolderImport)
                         case .failure(let error):
                             print("file import failed: \(error)")
                         }
@@ -125,8 +133,8 @@ struct MainNavigationContainerView: View {
         }
         .inspector(isPresented: Binding(get: {
             return isInspectorPresented && selectedSection == .compression
-        }, set: { _ in
-
+        }, set: { newValue in
+            isInspectorPresented = newValue
         }), content: {
             FileInspectorView(file: viewModel.items.first(where: { $0.id == selectedFileID }),
                               allLogs: viewModel.logs
@@ -134,7 +142,7 @@ struct MainNavigationContainerView: View {
         })
         .if(selectedSection == .compression, transform: { view in
             view.dropDestination(for: URL.self) { items, _ in
-                viewModel.addFiles(urls: items)
+                viewModel.addFiles(urls: items, recursive: recursiveFolderImport)
                 return true
             }
         })

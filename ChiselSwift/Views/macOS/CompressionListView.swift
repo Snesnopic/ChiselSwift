@@ -12,10 +12,6 @@ struct CompressionListView: View {
                 systemImage: "tray.and.arrow.down.fill",
                 description: Text("Drag and drop files here, or use the add button to start compressing.")
             )
-            .dropDestination(for: URL.self) { items, _ in
-                viewModel.addFiles(urls: items)
-                return true
-            }
         } else {
             List(viewModel.items, children: \.children, selection: $selectedFileID) { item in
                 HStack(spacing: 12) {
@@ -43,7 +39,8 @@ struct CompressionListView: View {
 
                     StatusBadgeView(status: item.status)
                 }
-                .opacity(item.status == .noGain ? 0.5 : 1.0)
+                // dim the row if it yielded no gain or was interrupted
+                .opacity((item.status == .noGain || item.status == .stopped) ? 0.5 : 1.0)
                 .tag(item.id)
             }
             .onDeleteCommand {

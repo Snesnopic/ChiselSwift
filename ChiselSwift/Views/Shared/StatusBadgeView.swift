@@ -29,6 +29,10 @@ struct StatusBadgeView: View {
         case .error:
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundColor(.red)
+
+        case .stopped:
+            Image(systemName: "stop.fill")
+                .foregroundColor(.red)
         }
     }
 }

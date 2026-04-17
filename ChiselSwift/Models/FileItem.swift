@@ -24,6 +24,7 @@ struct FileItem: Identifiable, Equatable {
         case skipped
         case completed(URL)
         case error(String)
+        case stopped
     }
 
     // resolve type dynamically using uttype

@@ -9,6 +9,7 @@ struct SettingsView: View {
     @AppStorage("verifyChecksums") private var verifyChecksums: Bool = false
     @AppStorage("threads") private var threads: Int = max(1, ProcessInfo.processInfo.activeProcessorCount / 2)
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
+    @AppStorage("recursiveFolderImport") private var recursiveFolderImport: Bool = true
 
     private let maxSystemThreads = max(1, ProcessInfo.processInfo.activeProcessorCount)
 
@@ -106,6 +107,13 @@ struct SettingsView: View {
                 } footer: {
                     Text("""
                         Many container files, such as PDFs, contain a lot of internal files that can't be processed. This option hides these files.
+                        """)
+                }
+                Section {
+                    Toggle("Recursive folder import", isOn: $recursiveFolderImport)
+                } footer: {
+                    Text("""
+                        When dropping a folder, all files in subfolders will be added.
                         """)
                 }
 

@@ -14,6 +14,8 @@ struct CompressView: View {
     @AppStorage("maxTokens") private var maxTokens: Int = 10000
     @AppStorage("threads") private var threads: Int = 4
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
+    @AppStorage("recursiveFolderImport") private var recursiveFolderImport: Bool = true
+
     @Environment(\.modelContext) private var modelContext
 
     private var descriptionText: Text {
@@ -33,7 +35,7 @@ struct CompressView: View {
                     description: descriptionText
                 )
                 .dropDestination(for: URL.self) { items, _ in
-                    viewModel.addFiles(urls: items)
+                    viewModel.addFiles(urls: items, recursive: recursiveFolderImport)
                     return true
                 }
                 .navigationTitle("Chisel")
@@ -47,12 +49,12 @@ struct CompressView: View {
                 }
                 .fileImporter(
                     isPresented: $isImporterPresented,
-                    allowedContentTypes: [.data],
+                    allowedContentTypes: [.data, .folder],
                     allowsMultipleSelection: true
                 ) { result in
                     switch result {
                     case .success(let urls):
-                        viewModel.addFiles(urls: urls)
+                        viewModel.addFiles(urls: urls, recursive: recursiveFolderImport)
                     case .failure(let error):
                         print("file import failed: \(error)")
                     }
@@ -90,8 +92,20 @@ struct CompressView: View {
                     }
                 }
                 .dropDestination(for: URL.self) { items, _ in
-                    viewModel.addFiles(urls: items)
+                    viewModel.addFiles(urls: items, recursive: recursiveFolderImport)
                     return true
+                }
+                .fileImporter(
+                    isPresented: $isImporterPresented,
+                    allowedContentTypes: [.data, .folder],
+                    allowsMultipleSelection: true
+                ) { result in
+                    switch result {
+                    case .success(let urls):
+                        viewModel.addFiles(urls: urls, recursive: recursiveFolderImport)
+                    case .failure(let error):
+                        print("file import failed: \(error)")
+                    }
                 }
                 // sheet definition for global logs
                 .sheet(isPresented: $showGlobalLogs) {
@@ -117,17 +131,32 @@ struct CompressView: View {
                             )
                         }
                     }) {
-                        Text(viewModel.isProcessing ? "Processing..." : "Start processing")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(!viewModel.canStartProcessing ? Color.gray : Color.accentColor)
-                            .foregroundColor(.white)
+                        HStack(spacing: 8) {
+                            if viewModel.isStopping {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                Text("Stopping threads...")
+                            } else if viewModel.isProcessing {
+                                Image(systemName: "stop.fill")
+                                Text("Stop processing")
+                            } else {
+                                Image(systemName: "play.fill")
+                                Text("Start processing")
+                            }
+                        }
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(
+                            viewModel.isStopping ? Color.orange :
+                                (viewModel.isProcessing ? Color.red :
+                                    (!viewModel.canStartProcessing ? Color.gray : Color.accentColor)))
+                        .foregroundColor(.white)
                             .cornerRadius(12)
                             .padding()
-                    }
-                    .disabled(!viewModel.canStartProcessing)
 
+                    }
+                    .disabled(viewModel.isStopping || (!viewModel.canStartProcessing && !viewModel.isProcessing))
                 }
             }
         }
