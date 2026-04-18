@@ -108,7 +108,7 @@ struct ChiselShortcutsProvider: AppShortcutsProvider {
                 "Run \(.applicationName)",
                 "Squeeze files using \(.applicationName)"
             ],
-            shortTitle: "Compress Files",
+            shortTitle: "Compress files",
             systemImageName: "rectangle.compress.vertical"
         )
     }

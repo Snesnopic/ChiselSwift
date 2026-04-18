@@ -17,6 +17,51 @@ final class ChiselViewModel {
         !isProcessing && !items.isEmpty && items.contains { $0.status == .pending }
     }
 
+    var activeSecurityBookmarks: Set<URL> = []
+#if os(macOS)
+    @ObservationIgnored
+    @AppStorage("outputFolderBookmark") private var outputFolderBookmark: Data?
+
+    func selectOutputFolder() {
+
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+
+        if panel.runModal() == .OK, let url = panel.url {
+            saveBookmark(for: url)
+        }
+
+    }
+
+    private func saveBookmark(for url: URL) {
+        do {
+            // create a persistent bookmark
+            let bookmarkData = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+            self.outputFolderBookmark = bookmarkData
+        } catch {
+            print("ERROR SAVING BOOKMARK: \(error)")
+        }
+    }
+
+    func getOutputFolderURL() -> URL? {
+        guard let data = outputFolderBookmark else { return nil }
+        var isStale = false
+        do {
+            let url = try URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
+            if isStale {
+                // bookmark is old, should ask again or refresh
+                saveBookmark(for: url)
+            }
+            return url
+        } catch {
+            print("ERROR RESOLVING BOOKMARK: \(error)")
+            return nil
+        }
+    }
+#endif
+
     func addFiles(urls: [URL], recursive: Bool) {
         print("IMPORTING \(urls.count) ROOT ITEMS (RECURSIVE: \(recursive))")
         let tempDirectory = FileManager.default.temporaryDirectory
@@ -27,6 +72,7 @@ final class ChiselViewModel {
                 print("FAILED TO ACCESS SECURITY SCOPED RESOURCE: \(rootURL.lastPathComponent)")
                 continue
             }
+            activeSecurityBookmarks.insert(rootURL)
 
             var filesToProcess: [URL] = []
             var isDir: ObjCBool = false
@@ -54,7 +100,8 @@ final class ChiselViewModel {
                     let size = attr[.size] as? Int64 ?? 0
 
                     let item = FileItem(
-                        url: destinationURL,
+                        url: fileURL,
+                        tempURL: destinationURL,
                         status: .pending,
                         size: size,
                         originalExtension: destinationURL.pathExtension.lowercased()
@@ -68,9 +115,6 @@ final class ChiselViewModel {
                     print("ERROR PREPARING FILE: \(error)")
                 }
             }
-
-            // release the root security scope only after all copies are done
-            rootURL.stopAccessingSecurityScopedResource()
         }
     }
 
@@ -101,14 +145,14 @@ final class ChiselViewModel {
     }
 
     // coordinates the chiselkit engine
-    func startProcessing(iterations: Int, iterationsLarge: Int, maxTokens: Int, threads: Int, hideUnsupported: Bool, context: ModelContext) async {
+    func startProcessing(iterations: Int, iterationsLarge: Int, maxTokens: Int, threads: Int, hideUnsupported: Bool, outputMode: OutputMode, context: ModelContext) async {
         guard !items.isEmpty else { return }
 
         // filter to process only pending items
         let pendingItems = items.filter { $0.status == .pending }
         guard !pendingItems.isEmpty else { return }
 
-        let urlsToProcess = pendingItems.map { $0.url }
+        let urlsToProcess = pendingItems.map { $0.tempURL }
         isProcessing = true
         print("STARTING BATCH PROCESSING WITH \(iterations) ITERATIONS, \(maxTokens) TOKENS, \(threads) THREADS")
 
@@ -185,15 +229,27 @@ final class ChiselViewModel {
                 updateItem(for: path, createIfNeeded: true) { parent, child, isRoot in
                     let targetName = URL(fileURLWithPath: path).lastPathComponent
                     let isGain = sizeBefore > sizeAfter
-                    let finalMsg = isGain ? "SUCCESSFULLY COMPRESSED: \(targetName) (saved \(formatBytes(Int64(sizeBefore - sizeAfter))))" : "NO GAIN: \(targetName)"
+                    var finalMsg = isGain ? "SUCCESSFULLY COMPRESSED: \(targetName) (saved \(formatBytes(Int64(sizeBefore - sizeAfter))))" : "NO GAIN: \(targetName)"
+
+                    var finalizationFailed = false
+
+                    if isGain {
+                        do {
+                            let itemToFinalize = isRoot ? parent : (child ?? parent)
+                            try self.finalizeFile(item: itemToFinalize, mode: outputMode)
+                        } catch {
+                            finalizationFailed = true
+                            finalMsg = "ERROR SAVING \(targetName): \(error.localizedDescription)"
+                        }
+                    }
 
                     if isRoot {
                         parent.sizeAfter = Int64(sizeAfter)
-                        parent.status = isGain ? .completed(parent.url) : .noGain
+                        parent.status = finalizationFailed ? .error("Save failed") : (isGain ? .completed(parent.url) : .noGain)
                         parent.logs.append(finalMsg)
                         logs.append(finalMsg)
 
-                        if isGain {
+                        if isGain && !finalizationFailed {
                             let duration = CFAbsoluteTimeGetCurrent() - (startTimes[path] ?? CFAbsoluteTimeGetCurrent())
                             let stat = CompressionStat(
                                 fileExtension: parent.originalExtension,
@@ -208,7 +264,7 @@ final class ChiselViewModel {
                             var localChild = unwrappedChild
                             localChild.size = Int64(sizeBefore)
                             localChild.sizeAfter = Int64(sizeAfter)
-                            localChild.status = isGain ? .completed(localChild.url) : .noGain
+                            localChild.status = finalizationFailed ? .error("Save failed") : (isGain ? .completed(localChild.url) : .noGain)
                             localChild.logs.append(finalMsg)
                             child = localChild
                         }
@@ -331,6 +387,11 @@ final class ChiselViewModel {
     }
 
     func clearItems() {
+        for url in activeSecurityBookmarks {
+            url.stopAccessingSecurityScopedResource()
+        }
+        activeSecurityBookmarks.removeAll()
+
         items.removeAll()
         logs.removeAll()
         print("CLEARED ALL ITEMS AND LOGS")
@@ -357,7 +418,7 @@ final class ChiselViewModel {
     }
 
     private func findIndexPath(for path: String, in nodes: [FileItem]) -> [Int]? {
-        if let idx = nodes.firstIndex(where: { $0.url.path == path }) {
+        if let idx = nodes.firstIndex(where: { $0.tempURL.path == path }) {
             return [idx]
         }
 
@@ -396,13 +457,13 @@ final class ChiselViewModel {
             let idx = indices.first!
 
             if indices.count == 1 {
-                if nodes[idx].url.path == path {
+                if nodes[idx].tempURL.path == path {
                     // EXACT MATCH AT ROOT LEVEL
                     var dummyChild: FileItem?
                     action(&nodes[idx], &dummyChild, true)
                 } else {
                     // PARENT MATCH, TARGET IS A CHILD
-                    let existingChildIdx = nodes[idx].children?.firstIndex(where: { $0.url.path == path })
+                    let existingChildIdx = nodes[idx].children?.firstIndex(where: { $0.tempURL.path == path })
 
                     if let cIdx = existingChildIdx {
                         var targetChild: FileItem? = nodes[idx].children![cIdx]
@@ -416,7 +477,8 @@ final class ChiselViewModel {
                         if nodes[idx].children == nil { nodes[idx].children = [] }
                         let childURL = URL(fileURLWithPath: path)
                         var newChild: FileItem? = FileItem(
-                            url: childURL,
+                            url: childURL,          // for extracted files, original and temp are the same
+                            tempURL: childURL,      // they only exist in the temp directory
                             status: .pending,
                             size: 0,
                             originalExtension: childURL.pathExtension.lowercased()
@@ -435,7 +497,7 @@ final class ChiselViewModel {
                 // INTERCEPT NESTED MATCH
                 if indices.count == 2 {
                     let childIdx = indices.dropFirst().first!
-                    if nodes[idx].children![childIdx].url.path == path {
+                    if nodes[idx].children![childIdx].tempURL.path == path {
                         var targetChild: FileItem? = nodes[idx].children![childIdx]
                         action(&nodes[idx], &targetChild, false)
                         if let valid = targetChild {
@@ -456,4 +518,75 @@ final class ChiselViewModel {
 
         applyAction(nodes: &items, indices: ArraySlice(indexPath))
     }
+
+    private func generateUniqueURL(for url: URL) -> URL {
+        let fm = FileManager.default
+        if !fm.fileExists(atPath: url.path) { return url }
+
+        let dir = url.deletingLastPathComponent()
+        let ext = url.pathExtension
+        let name = url.deletingPathExtension().lastPathComponent
+
+        var counter = 1
+        var newURL = url
+
+        while fm.fileExists(atPath: newURL.path) {
+            newURL = dir.appendingPathComponent("\(name)-\(counter)").appendingPathExtension(ext)
+            counter += 1
+        }
+
+        return newURL
+    }
+
+    private func finalizeFile(item: FileItem, mode: OutputMode) throws {
+        let fm = FileManager.default
+        let original = item.url
+        let temp = item.tempURL
+
+        // ignore items that are only temporary (extracted children)
+        // the parent container will handle the finalization
+        guard original.path != temp.path else { return }
+
+        let originalNoExt = original.deletingPathExtension()
+        let ext = original.pathExtension
+
+        // start access to the original resource (held by the bookmark/active access)
+        guard original.startAccessingSecurityScopedResource() else {
+            throw NSError(domain: "ChiselError", code: 1, userInfo: [NSLocalizedDescriptionKey: "PERMISSION DENIED FOR ORIGINAL FILE"])
+        }
+        defer { original.stopAccessingSecurityScopedResource() }
+
+        switch mode {
+        case .overwrite:
+            print("OVERWRITING ORIGINAL: \(original.lastPathComponent)")
+            _ = try fm.replaceItemAt(original, withItemAt: temp)
+
+        case .sideBySide:
+            var newURL = originalNoExt.appendingPathExtension("compressed").appendingPathExtension(ext)
+            newURL = generateUniqueURL(for: newURL)
+            print("SAVING SIDE-BY-SIDE: \(newURL.lastPathComponent)")
+            try fm.moveItem(at: temp, to: newURL)
+
+        case .keepOriginal:
+            var backupURL = originalNoExt.appendingPathExtension("original").appendingPathExtension(ext)
+            backupURL = generateUniqueURL(for: backupURL)
+            print("CREATING BACKUP AND SWAPPING: \(backupURL.lastPathComponent)")
+            try fm.moveItem(at: original, to: backupURL)
+            try fm.moveItem(at: temp, to: original)
+            #if os(macOS)
+        case .outputFolder:
+            if let destFolder = getOutputFolderURL() {
+                if destFolder.startAccessingSecurityScopedResource() {
+                    var destURL = destFolder.appendingPathComponent(original.lastPathComponent)
+                    destURL = generateUniqueURL(for: destURL)
+                    print("MOVING TO CUSTOM FOLDER: \(destURL.path)")
+                    try? fm.removeItem(at: destURL)
+                    try fm.moveItem(at: temp, to: destURL)
+                    destFolder.stopAccessingSecurityScopedResource()
+                }
+            }
+            #endif
+        }
+    }
+
 }

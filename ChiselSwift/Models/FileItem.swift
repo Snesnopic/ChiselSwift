@@ -3,7 +3,8 @@ import UniformTypeIdentifiers
 
 struct FileItem: Identifiable, Equatable {
     let id = UUID()
-    let url: URL
+    var url: URL
+    var tempURL: URL
     var status: ProcessingStatus
     var size: Int64
     var sizeAfter: Int64?

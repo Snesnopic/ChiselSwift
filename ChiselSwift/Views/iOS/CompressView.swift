@@ -15,6 +15,7 @@ struct CompressView: View {
     @AppStorage("threads") private var threads: Int = 4
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
     @AppStorage("recursiveFolderImport") private var recursiveFolderImport: Bool = true
+    @AppStorage("outputMode") private var outputMode: OutputMode = .overwrite
 
     @Environment(\.modelContext) private var modelContext
 
@@ -127,6 +128,7 @@ struct CompressView: View {
                                 maxTokens: maxTokens,
                                 threads: threads,
                                 hideUnsupported: hideUnsupported,
+                                outputMode: outputMode,
                                 context: modelContext
                             )
                         }

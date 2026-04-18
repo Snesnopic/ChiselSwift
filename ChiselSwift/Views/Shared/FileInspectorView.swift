@@ -174,10 +174,11 @@ struct FileInspectorView: View {
 #endif
 }
 
-#Preview("Light Mode") {
+#Preview("Light mode") {
     FileInspectorView(
         file: FileItem(
             url: URL(fileURLWithPath: "/Users/test/Desktop/example.png"),
+            tempURL: URL(fileURLWithPath: "/Users/test/Desktop/example.png"),
             status: .pending, size: 1_024_000,
             sizeAfter: 512_000,
             originalExtension: "png",
@@ -192,10 +193,11 @@ struct FileInspectorView: View {
     .preferredColorScheme(.light)
 }
 
-#Preview("Dark Mode") {
+#Preview("Dark mode") {
     FileInspectorView(
         file: FileItem(
             url: URL(fileURLWithPath: "/Users/test/Desktop/example.png"),
+            tempURL: URL(fileURLWithPath: "/Users/test/Desktop/example.png"),
             status: .pending, size: 1_024_000,
             sizeAfter: 512_000,
             originalExtension: "png",

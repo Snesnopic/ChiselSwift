@@ -10,12 +10,106 @@ struct SettingsView: View {
     @AppStorage("threads") private var threads: Int = max(1, ProcessInfo.processInfo.activeProcessorCount / 2)
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
     @AppStorage("recursiveFolderImport") private var recursiveFolderImport: Bool = true
+    @AppStorage("outputMode") private var outputMode: OutputMode = .overwrite
+    @AppStorage("outputFolderBookmark") private var outputFolderBookmark: Data?
 
     private let maxSystemThreads = max(1, ProcessInfo.processInfo.activeProcessorCount)
+#if os(macOS)
+private var outputFolderURL: URL? {
+    guard let data = outputFolderBookmark else { return nil }
+    var isStale = false
+    return try? URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
+}
 
+private func selectFolder() {
+    let panel = NSOpenPanel()
+    panel.canCreateDirectories = true
+    panel.canChooseFiles = false
+    panel.canChooseDirectories = true
+    panel.allowsMultipleSelection = false
+    panel.message = "Select the output directory for compressed files"
+
+    if panel.runModal() == .OK, let url = panel.url {
+        do {
+            let bookmark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+            outputFolderBookmark = bookmark
+        } catch {
+            print("FAILED TO CREATE BOOKMARK: \(error)")
+        }
+    }
+}
+#endif
     var body: some View {
         NavigationStack {
             Form {
+                // MARK: - General Options
+
+                Section {
+                    Picker("Output Mode", selection: $outputMode) {
+                        ForEach(OutputMode.allCases) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+#if os(macOS)
+                    if outputMode == .outputFolder {
+                        HStack {
+                            Text("Destination:")
+                                .foregroundStyle(.secondary)
+
+                            Spacer()
+
+                            Button(outputFolderURL != nil ? outputFolderURL!.lastPathComponent : "Choose folder...") {
+                                selectFolder()
+                            }
+                        }
+                        if let path = outputFolderURL?.path {
+                            Text(path)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                        }
+                    }
+ #endif
+                } header: {
+                    Text("General options")
+                }
+                footer: {
+                        Text("""
+
+                            """)
+                    }
+
+                Section {
+                    Toggle("Preserve file metadata", isOn: $preserveMetadata)
+                }
+                footer: {
+                    Text("""
+                    Keeps EXIF, XMP, color profiles, and timestamps. Disabling this yields slightly better compression but strips most non-essential data.
+                    """)
+                }
+                Section {
+                    Toggle("Verify data integrity", isOn: $verifyChecksums)
+                }  footer: {
+                    Text("""
+                    Perform an extra check after each compression to ensure the content of the modified file perfectly matches the original file. Guarantees that your files don't degrade in quality, but makes processing slower.
+                    """)
+                }
+                Section {
+                    Toggle("Hide unsupported subfiles", isOn: $hideUnsupported)
+                } footer: {
+                    Text("""
+                        Many container files, such as PDFs, contain a lot of internal files that can't be processed. This option hides these files.
+                        """)
+                }
+                Section {
+                    Toggle("Recursive folder import", isOn: $recursiveFolderImport)
+                } footer: {
+                    Text("""
+                        When dropping a folder, all files in subfolders will be added.
+                        """)
+                }
+
                 // MARK: - Compression Parameters
                 Section {
                     VStack(alignment: .leading) {
@@ -83,38 +177,6 @@ struct SettingsView: View {
                     Text("""
                     Amount of tokens used for flexigif compression. This affects GIF files.
                     """)
-                }
-
-                // MARK: - General Options
-                Section {
-                    Toggle("Preserve file metadata", isOn: $preserveMetadata)
-                } header: {
-                    Text("General options")
-                } footer: {
-                    Text("""
-                    Keeps EXIF, XMP, color profiles, and timestamps. Disabling this yields slightly better compression but strips most non-essential data.
-                    """)
-                }
-                Section {
-                    Toggle("Verify data integrity", isOn: $verifyChecksums)
-                }  footer: {
-                    Text("""
-                    Perform an extra check after each compression to ensure the content of the modified file perfectly matches the original file. Guarantees that your files don't degrade in quality, but makes processing slower.
-                    """)
-                }
-                Section {
-                    Toggle("Hide unsupported subfiles", isOn: $hideUnsupported)
-                } footer: {
-                    Text("""
-                        Many container files, such as PDFs, contain a lot of internal files that can't be processed. This option hides these files.
-                        """)
-                }
-                Section {
-                    Toggle("Recursive folder import", isOn: $recursiveFolderImport)
-                } footer: {
-                    Text("""
-                        When dropping a folder, all files in subfolders will be added.
-                        """)
                 }
 
                 // MARK: - System Resources
