@@ -96,10 +96,10 @@ struct SettingsView: View {
                     """)
                 }
                 Section {
-                    Toggle("Verify data integrity (checksums)", isOn: $verifyChecksums)
+                    Toggle("Verify data integrity", isOn: $verifyChecksums)
                 }  footer: {
                     Text("""
-                    Perform a check after each compression to ensure the content of the modified file perfectly matches the original file. Guarantees that your files don't degrade in quality, but makes processing slower.
+                    Perform an extra check after each compression to ensure the content of the modified file perfectly matches the original file. Guarantees that your files don't degrade in quality, but makes processing slower.
                     """)
                 }
                 Section {

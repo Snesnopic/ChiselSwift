@@ -33,6 +33,10 @@ struct AboutView: View {
             VStack(spacing: 12) {
                 Link("Chisel engine", destination: URL(string: "https://github.com/Snesnopic/chisel")!)
                 Link("Chisel GUI", destination: URL(string: "https://github.com/Snesnopic/ChiselSwift")!)
+                HStack(spacing: 0) {
+                    Text("App icon by ")
+                    Link("Mahary Esposito", destination: URL(string: "https://www.behance.net/mychan1")!)
+                }
             }
             .font(.callout)
             .padding(.vertical, 8)

@@ -136,9 +136,11 @@ struct MainNavigationContainerView: View {
         }, set: { newValue in
             isInspectorPresented = newValue
         }), content: {
-            FileInspectorView(file: viewModel.items.first(where: { $0.id == selectedFileID }),
-                              allLogs: viewModel.logs
-            )
+            FileInspectorView(
+                            file: viewModel.items.first(where: { $0.id == selectedFileID }),
+                            allLogs: viewModel.logs,
+                            showsToolbarAction: selectedSection == .compression
+                        )
         })
         .if(selectedSection == .compression, transform: { view in
             view.dropDestination(for: URL.self) { items, _ in

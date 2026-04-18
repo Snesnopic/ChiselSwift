@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 struct FileInspectorView: View {
     let file: FileItem?
     let allLogs: [String]
+    var showsToolbarAction: Bool = true
 
     var body: some View {
         Group {
@@ -70,13 +71,15 @@ struct FileInspectorView: View {
         // export button only for macOS
         .toolbar {
 #if os(macOS)
-            ToolbarItem(placement: .primaryAction) {
-                Button(action: exportLogs) {
-                    Label("Export Logs", systemImage: "square.and.arrow.up")
+            if showsToolbarAction {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: exportLogs) {
+                        Label("Export logs", systemImage: "square.and.arrow.up")
+                    }
+                    .help("Export current logs to .txt")
+                    // disabled if there are no logs to export
+                    .disabled(file != nil ? file!.logs.isEmpty : allLogs.isEmpty)
                 }
-                .help("Export current logs to .txt")
-                // disabled if there are no logs to export
-                .disabled(file != nil ? file!.logs.isEmpty : allLogs.isEmpty)
             }
 #endif
         }
