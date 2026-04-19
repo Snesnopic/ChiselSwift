@@ -14,6 +14,7 @@ struct CompressionListView: View {
             )
         } else {
             List(viewModel.items, children: \.children, selection: $selectedFileID) { item in
+                let isError = isStatusError(item.status)
                 HStack(spacing: 14) {
                     // larger icons
                     Image(systemName: item.typeIconName)
@@ -55,7 +56,17 @@ struct CompressionListView: View {
                     }
 
                     Spacer()
-
+                    if isError {
+                        Button {
+                            selectedFileID = item.id
+                            // open inspector or specific log view
+                        } label: {
+                            Image(systemName: "exclamationmark.octagon.fill")
+                                .foregroundStyle(.red)
+                        }
+                        .buttonStyle(.plain)
+                        .help("View error details")
+                    }
                     if let percentage = item.savingPercentage {
                         SavingsBarView(percentage: percentage)
                     }
@@ -68,7 +79,6 @@ struct CompressionListView: View {
                 .tag(item.id)
                 // context menu
                 .contextMenu {
-                    // disable reveal in finder for subfiles based on your internal logic
                     Button {
                         revealInFinder(item)
                     } label: {
@@ -84,6 +94,7 @@ struct CompressionListView: View {
                     } label: {
                         Label("Delete", systemImage: "document.on.trash")
                     }
+                    .disabled(viewModel.isProcessing)
                 }
             }
             .onDeleteCommand {
@@ -125,6 +136,11 @@ struct CompressionListView: View {
             }
         }
     }
+    private func isStatusError(_ status: FileItem.ProcessingStatus) -> Bool {
+        if case .error = status { return true }
+        return false
+    }
+
     // MARK: - Actions
 
     private func revealInFinder(_ item: FileItem) {

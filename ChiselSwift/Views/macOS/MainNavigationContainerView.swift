@@ -74,6 +74,7 @@ struct MainNavigationContainerView: View {
                                     }) {
                                         Label("Clear", systemImage: "document.on.trash")
                                     }
+                                    .disabled(viewModel.isProcessing)
                                 }
                             } else {
                                 ToolbarItem(placement: .automatic) {
@@ -159,11 +160,16 @@ struct MainNavigationContainerView: View {
         }, set: { newValue in
             isInspectorPresented = newValue
         }), content: {
-            FileInspectorView(
-                            file: viewModel.items.first(where: { $0.id == selectedFileID }),
-                            allLogs: viewModel.logs,
-                            showsToolbarAction: selectedSection == .compression
-                        )
+            if let selectedID = selectedFileID,
+               let file = viewModel.findItem(with: selectedID) {
+                FileInspectorView(
+                    file: file,
+                    allLogs: viewModel.logs,
+                    showsToolbarAction: selectedSection == .compression
+                )
+            } else {
+                ContentUnavailableView("No selection", systemImage: "info.circle")
+            }
         })
         .if(selectedSection == .compression, transform: { view in
             view.dropDestination(for: URL.self) { items, _ in

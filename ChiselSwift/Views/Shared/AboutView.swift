@@ -41,9 +41,33 @@ struct AboutView: View {
             .font(.callout)
             .padding(.vertical, 8)
 
+            Section {
+                Link(destination: URL(string: "https://www.icloud.com/shortcuts/e288211f8952436098784f107df3083c")!) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "square.2.layers.3d.top.filled")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 28, height: 28)
+                            .foregroundStyle(.blue)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Automate with Shortcuts")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            Text("Chisel provides App Intents to compress your files silently in the background or right from the Finder context menu.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.leading)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+
             Text(copyrightString)
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
+
         }
         .navigationTitle("About")
         .padding(40)

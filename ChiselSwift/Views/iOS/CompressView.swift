@@ -73,6 +73,7 @@ struct CompressView: View {
                 }
                 .navigationTitle("Chisel")
                 .toolbar {
+                    // open global logs
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button(action: { showGlobalLogs.toggle() }) {
                             Image(systemName: "terminal")
@@ -107,6 +108,7 @@ struct CompressView: View {
                         print("FILE IMPORT FAILED: \(error)")
                     }
                 }
+                // sheet definition for global logs
                 .sheet(isPresented: $showGlobalLogs) {
                     NavigationStack {
                         FileInspectorView(file: nil, allLogs: viewModel.logs)

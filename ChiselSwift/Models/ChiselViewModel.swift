@@ -588,5 +588,14 @@ final class ChiselViewModel {
             #endif
         }
     }
-
+    func findItem(with id: UUID, in searchItems: [FileItem]? = nil) -> FileItem? {
+        let source = searchItems ?? items
+        for item in source {
+            if item.id == id { return item }
+            if let children = item.children, let found = findItem(with: id, in: children) {
+                return found
+            }
+        }
+        return nil
+    }
 }
