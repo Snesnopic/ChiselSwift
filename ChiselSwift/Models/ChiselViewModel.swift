@@ -168,7 +168,7 @@ final class ChiselViewModel {
         var pendingStats: [CompressionStat] = []
         var startTimes: [String: CFAbsoluteTime] = [:]
 #if os(macOS)
-        await MenuBarProgressManager.shared.show(isDeterminate: true)
+        MenuBarProgressManager.shared.show(isDeterminate: true)
 #endif
 
         for await event in await chisel.process(files: urlsToProcess) {
@@ -542,7 +542,7 @@ final class ChiselViewModel {
         }
 
                 let rootIndex = indexPath.first!
-                var rootItem = items[rootIndex]
+                let rootItem = items[rootIndex]
                 var localNodes = [rootItem]
 
                 var relativeIndices = Array(indexPath)

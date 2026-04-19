@@ -15,27 +15,32 @@ extension Bundle {
         return iconFileName
     }
 }
-var view: Image {
-#if os(macOS)
-    return Image(nsImage: NSApplication.shared.applicationIconImage)
-#else
-    return Image(uiImage: UIImage(named: Bundle.main.iconFileName ?? "AppIcon")! )
-#endif
+
+struct AppIconView: View {
+    var cornerRadius: CGFloat = 22
+
+    var body: some View {
+        #if os(macOS)
+        Image(nsImage: NSApplication.shared.applicationIconImage)
+            .resizable()
+        #else
+        Image(uiImage: UIImage(named: Bundle.main.iconFileName ?? "AppIcon")!)
+            .resizable()
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        #endif
+    }
 }
 
-func AppIconView() -> Image {
-    return view
-}
 #Preview("Light mode") {
     AppIconView()
-        .resizable()
+        .frame(width: 100, height: 100)
         .modelContainer(for: CompressionStat.self, inMemory: true)
         .preferredColorScheme(.light)
 }
 
 #Preview("Dark mode") {
     AppIconView()
-        .resizable()
+        .frame(width: 100, height: 100)
         .modelContainer(for: CompressionStat.self, inMemory: true)
         .preferredColorScheme(.dark)
 }

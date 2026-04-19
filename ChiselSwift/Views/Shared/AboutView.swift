@@ -14,7 +14,6 @@ struct AboutView: View {
         VStack(spacing: 24) {
 
             AppIconView()
-                .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 80, height: 80)
                 .foregroundColor(.blue)
