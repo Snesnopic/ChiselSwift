@@ -3,6 +3,7 @@ import SwiftData
 import Charts
 
 struct StatsDashboardView: View {
+    @Environment(\.colorScheme) var colorScheme: ColorScheme
     @Query(sort: \CompressionStat.timestamp, order: .reverse) private var stats: [CompressionStat]
 
     // global metrics
@@ -34,7 +35,6 @@ struct StatsDashboardView: View {
     var body: some View {
         NavigationStack {
             if stats.isEmpty {
-                // native empty state view
                 ContentUnavailableView(
                     "No statistics yet",
                     systemImage: "chart.pie",
@@ -43,94 +43,160 @@ struct StatsDashboardView: View {
                 .navigationTitle("Statistics")
             } else {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 32) {
+                    VStack(spacing: 16) {
 
-                        // global counter section
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Total space saved")
-                                .font(.headline)
-                                .foregroundStyle(.secondary)
+                        // bento box section
+                        ViewThatFits {
+                            // wide layout for macos/ipad
+                            HStack(spacing: 16) {
+                                HeroStatCard(title: "Total space saved", value: totalSaved.formatBytes(), color: .green)
 
-                            Text(totalSaved.formatBytes())
-                                .font(.system(size: 54, weight: .heavy, design: .rounded))
-                                .foregroundStyle(Color.green.gradient)
-                                .contentTransition(.numericText())
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 16)
-
-                        // highlights grid
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 16)], alignment: .leading) {
-                            StatCardView(title: "Files processed", value: "\(totalFiles)", icon: "doc.on.doc", color: .blue)
-                            StatCardView(title: "Largest file", value: largestFile.formatBytes(), icon: "arrow.up.doc", color: .orange)
-                            StatCardView(title: "Biggest save", value: biggestSave.formatBytes(), icon: "arrow.down.right.circle", color: .purple)
-                        }
-                        .padding(.horizontal)
-
-                        // charts section
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 300, maximum: 600), spacing: 24)], alignment: .center) {
-
-                            // pie chart: savings by format
-                            VStack(alignment: .leading) {
-                                Text("Savings by format")
-                                    .font(.headline)
-
-                                Chart(savingsByExtension, id: \.ext) { item in
-                                    SectorMark(
-                                        angle: .value("Saved bytes", item.saved),
-                                        innerRadius: .ratio(0.6),
-                                        angularInset: 2.0
-                                    )
-                                    .foregroundStyle(by: .value("Format", item.ext))
-                                    .annotation(position: .overlay) {
-                                        Text(item.ext)
-                                            .font(.caption.bold())
-                                            .foregroundStyle(.white)
+                                VStack(spacing: 16) {
+                                    HStack(spacing: 16) {
+                                        StatCardView(title: "Files", value: "\(totalFiles)", icon: "doc.on.doc", color: .blue)
+                                        StatCardView(title: "Largest", value: largestFile.formatBytes(), icon: "arrow.up.doc", color: .orange)
                                     }
+                                    StatCardView(title: "Biggest save", value: biggestSave.formatBytes(), icon: "arrow.down.right.circle", color: .purple)
                                 }
-                                .frame(height: 250)
+                                .frame(minWidth: 320)
                             }
-                            .padding()
-                            .background(.background)
-                            .cornerRadius(16)
+
+                            // narrow layout for ios portrait
+                            VStack(spacing: 16) {
+                                HeroStatCard(title: "Total space saved", value: totalSaved.formatBytes(), color: .green)
+
+                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                                    StatCardView(title: "Files", value: "\(totalFiles)", icon: "doc.on.doc", color: .blue)
+                                    StatCardView(title: "Largest", value: largestFile.formatBytes(), icon: "arrow.up.doc", color: .orange)
+                                }
+
+                                StatCardView(title: "Biggest save", value: biggestSave.formatBytes(), icon: "arrow.down.right.circle", color: .purple)
+                            }
                         }
-                        .padding(.horizontal)
+
+                        FormatChartCard(data: savingsByExtension)
                     }
-                    .navigationTitle("Statistics")
-                    .padding(.bottom, 32)
+                    .padding()
                 }
+                .navigationTitle("Statistics")
             }
         }
     }
 }
 
-// reusable view for small metric cards
+// MARK: - Components
+
+struct HeroStatCard: View {
+    let title: String
+    let value: String
+    let color: Color
+    @Environment(\.colorScheme) var colorScheme: ColorScheme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(.secondary)
+
+            Spacer(minLength: 0)
+
+            Text(value)
+                .font(.system(size: 54, weight: .heavy, design: .rounded))
+                .foregroundStyle(color.gradient)
+                .minimumScaleFactor(0.4)
+                .lineLimit(1)
+                .contentTransition(.numericText())
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        // match the exact height of two small cards + spacing (approx 180-200)
+        .frame(height: 190)
+        .if(colorScheme == .dark, transform: { view in
+            view.background(.quinary, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        })
+        .if(colorScheme == .light, transform: { view in
+            view.background(.background, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        })
+
+        .shadow(color: .primary.opacity(0.15), radius: 8, x: 0, y: 4)
+    }
+}
+
 struct StatCardView: View {
     let title: String
     let value: String
     let icon: String
     let color: Color
+    @Environment(\.colorScheme) var colorScheme: ColorScheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: icon)
                     .foregroundStyle(color)
+                    .symbolRenderingMode(.hierarchical)
                 Text(title)
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
+
             Text(value)
-                .font(.title3)
+                .font(.title2)
                 .bold()
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
         }
-        .padding()
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background)
-        .cornerRadius(12)
+        .frame(maxHeight: .infinity)
+        .if(colorScheme == .dark, transform: { view in
+            view.background(.quinary, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        })
+        .if(colorScheme == .light, transform: { view in
+            view.background(.background, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        })
+        .shadow(color: .primary.opacity(0.15), radius: 8, x: 0, y: 4)
+    }
+}
+
+struct FormatChartCard: View {
+    let data: [(ext: String, saved: Int64)]
+    @Environment(\.colorScheme) var colorScheme: ColorScheme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Savings by format")
+                .font(.headline)
+                .foregroundStyle(.secondary)
+
+            Chart(data, id: \.ext) { item in
+                BarMark(
+                    x: .value("saved", item.saved),
+                    y: .value("format", item.ext)
+                )
+                .foregroundStyle(by: .value("format", item.ext))
+                .cornerRadius(4)
+                .annotation(position: .trailing, alignment: .leading) {
+                    Text(item.saved.formatBytes())
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .chartLegend(.hidden)
+            .chartXAxis(.hidden)
+            // scale height dynamically based on the number of formats processed
+            .frame(height: max(120, CGFloat(data.count * 40)))
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .if(colorScheme == .dark, transform: { view in
+            view.background(.quinary, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        })
+        .if(colorScheme == .light, transform: { view in
+            view.background(.background, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        })
+        .shadow(color: .primary.opacity(0.15), radius: 8, x: 0, y: 4)
     }
 }
 
@@ -184,6 +250,6 @@ struct StatCardView: View {
     }
 
     return StatsDashboardView()
-        .modelContainer(for: CompressionStat.self, inMemory: true)
+        .modelContainer(container)
         .preferredColorScheme(.dark)
 }

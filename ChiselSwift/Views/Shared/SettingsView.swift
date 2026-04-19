@@ -58,6 +58,18 @@ private func selectFolder() {
     var body: some View {
         NavigationStack {
             Form {
+#if !os(macOS)
+                Section {
+                    NavigationLink(destination: AboutView()) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "info.circle")
+                                .foregroundStyle(Color.accentColor)
+                            Text("About Chisel")
+                                .foregroundStyle(.primary)
+                        }
+                    }
+                }
+#endif
                 // MARK: - General Options
                 Section {
                     Picker("Output Mode", selection: $outputMode) {
