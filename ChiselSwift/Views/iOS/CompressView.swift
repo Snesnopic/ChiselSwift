@@ -57,14 +57,14 @@ struct CompressView: View {
                     case .success(let urls):
                         viewModel.addFiles(urls: urls, recursive: recursiveFolderImport)
                     case .failure(let error):
-                        print("file import failed: \(error)")
+                        print("FILE IMPORT FAILED: \(error)")
                     }
                 }
             } else {
                 List {
                     Section("Files") {
                         ForEach(viewModel.items) { item in
-                            recursiveFileNode(item)
+                            RecursiveFileNodeView(item: item, viewModel: viewModel)
                         }
                         .onDelete { indexSet in
                             viewModel.removeItems(at: indexSet)
@@ -73,7 +73,6 @@ struct CompressView: View {
                 }
                 .navigationTitle("Chisel")
                 .toolbar {
-                    // open global logs
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button(action: { showGlobalLogs.toggle() }) {
                             Image(systemName: "terminal")
@@ -105,10 +104,9 @@ struct CompressView: View {
                     case .success(let urls):
                         viewModel.addFiles(urls: urls, recursive: recursiveFolderImport)
                     case .failure(let error):
-                        print("file import failed: \(error)")
+                        print("FILE IMPORT FAILED: \(error)")
                     }
                 }
-                // sheet definition for global logs
                 .sheet(isPresented: $showGlobalLogs) {
                     NavigationStack {
                         FileInspectorView(file: nil, allLogs: viewModel.logs)
@@ -154,56 +152,68 @@ struct CompressView: View {
                                 (viewModel.isProcessing ? Color.red :
                                     (!viewModel.canStartProcessing ? Color.gray : Color.accentColor)))
                         .foregroundColor(.white)
-                            .cornerRadius(12)
-                            .padding()
-
+                        .cornerRadius(12)
+                        .padding()
                     }
                     .disabled(viewModel.isStopping || (!viewModel.canStartProcessing && !viewModel.isProcessing))
                 }
             }
         }
     }
+}
 
-    // handles deep n-level rendering for nested archives
-    private func recursiveFileNode(_ item: FileItem) -> AnyView {
+struct RecursiveFileNodeView: View {
+    let item: FileItem
+    let viewModel: ChiselViewModel
+
+    var body: some View {
         if let children = item.children, !children.isEmpty {
-            return AnyView(
-                DisclosureGroup {
-                    ForEach(children) { child in
-                        recursiveFileNode(child)
-                    }
-                } label: {
-                    fileRow(for: item)
+            DisclosureGroup {
+                ForEach(children) { child in
+                    RecursiveFileNodeView(item: child, viewModel: viewModel)
                 }
-            )
+            } label: {
+                FileRowView(item: item, logs: viewModel.logs)
+            }
         } else {
-            return AnyView(fileRow(for: item))
+            FileRowView(item: item, logs: viewModel.logs)
         }
     }
+}
 
-    // reusable viewbuilder for file rows
-    @ViewBuilder
-    private func fileRow(for item: FileItem) -> some View {
-        NavigationLink(destination: FileInspectorView(file: item, allLogs: viewModel.logs)) {
+// standalone view to ensure proper diffing
+struct FileRowView: View {
+    let item: FileItem
+    let logs: [String]
+
+    // checks if current status is an error
+    private var isError: Bool {
+        if case .error = item.status { return true }
+        return false
+    }
+
+    var body: some View {
+        NavigationLink(destination: FileInspectorView(file: item, allLogs: logs)) {
             HStack {
                 Image(systemName: item.typeIconName)
                     .scaledToFit()
                     .frame(width: 24, height: 24)
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(isError ? .red : .blue)
                     .symbolRenderingMode(.hierarchical)
 
                 VStack(alignment: .leading) {
                     Text(item.url.lastPathComponent)
                         .font(.headline)
+                        .foregroundStyle(isError ? .red : .primary)
 
-                    if let children = item.children, children.isEmpty {
+                    if let children = item.children, !children.isEmpty {
                         Text("\(children.count) files inside")
                             .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(isError ? .red.opacity(0.8) : .secondary)
                     } else {
-                        Text(viewModel.formatBytes(item.size))
+                        Text(ByteCountFormatter.string(fromByteCount: item.size, countStyle: .file))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(isError ? .red.opacity(0.8) : .secondary)
                     }
                 }
 

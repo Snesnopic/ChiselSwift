@@ -14,23 +14,43 @@ struct CompressionListView: View {
             )
         } else {
             List(viewModel.items, children: \.children, selection: $selectedFileID) { item in
-                HStack(spacing: 12) {
+                HStack(spacing: 14) {
+                    // larger icons
                     Image(systemName: item.typeIconName)
                         .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                            .foregroundStyle(.blue)
-                            .symbolRenderingMode(.hierarchical)
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .foregroundStyle(.blue)
+                        .symbolRenderingMode(.hierarchical)
 
-                    VStack(alignment: .leading) {
+                    // text hierarchy
+                    VStack(alignment: .leading, spacing: 2) {
                         Text(item.url.lastPathComponent)
-                            .font(.body)
+                            .font(.headline)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
 
-                        // safe display of children count
-                        if let children = item.children, !children.isEmpty {
-                            Text("\(children.count) files inside")
-                                .font(.caption2)
+                        HStack(spacing: 6) {
+                            Text(ByteCountFormatter.string(fromByteCount: item.size, countStyle: .file))
+                                .font(.caption)
                                 .foregroundStyle(.secondary)
+
+                            if let children = item.children, !children.isEmpty {
+                                Text("•")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                                Text("\(children.count) files inside")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text("•")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                                Text(item.url.deletingLastPathComponent().lastPathComponent)
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                                    .lineLimit(1)
+                            }
                         }
                     }
 
@@ -42,44 +62,91 @@ struct CompressionListView: View {
 
                     StatusBadgeView(status: item.status)
                 }
+                .padding(.vertical, 4)
                 // dim the row if it yielded no gain or was interrupted
                 .opacity((item.status == .noGain || item.status == .stopped) ? 0.5 : 1.0)
                 .tag(item.id)
+                // context menu
+                .contextMenu {
+                    // disable reveal in finder for subfiles based on your internal logic
+                    Button {
+                        revealInFinder(item)
+                    } label: {
+                        Label("Reveal in Finder", systemImage: "magnifyingglass")
+                    }
+
+                    Divider()
+
+                    Button(role: .destructive) {
+                        withAnimation {
+                            delete(item: item)
+                        }
+                    } label: {
+                        Label("Delete", systemImage: "document.on.trash")
+                    }
+                }
             }
             .onDeleteCommand {
                 // delete root level items
                 guard let selectedID = selectedFileID,
                       let index = viewModel.items.firstIndex(where: { $0.id == selectedID }) else { return }
+                withAnimation {
+                    selectedFileID = nil
+                    viewModel.removeItems(at: IndexSet(integer: index))
+                }
 
-                viewModel.removeItems(at: IndexSet(integer: index))
             }
             .onKeyPress(.escape) {
                 // clear selection
-                selectedFileID = nil
+                withAnimation {
+                    selectedFileID = nil
+                }
                 return .handled
             }
         }
     }
-}
+    struct SavingsBarView: View {
+        let percentage: Double
 
-struct SavingsBarView: View {
-    let percentage: Double
+        var body: some View {
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(String(format: "-%.1f%%", percentage))
+                    .font(.caption2).monospacedDigit()
+                    .foregroundStyle(.green)
 
-    var body: some View {
-        VStack(alignment: .trailing, spacing: 2) {
-            Text(String(format: "-%.1f%%", percentage))
-                .font(.caption2).monospacedDigit()
-                .foregroundStyle(.green)
-
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(.gray.opacity(0.2))
-                    Capsule()
-                        .fill(.green.opacity(0.6))
-                        .frame(width: geo.size.width * CGFloat(min(percentage / 100, 1.0)))
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(.gray.opacity(0.2))
+                        Capsule()
+                            .fill(.green.opacity(0.6))
+                            .frame(width: geo.size.width * CGFloat(min(percentage / 100, 1.0)))
+                    }
                 }
             }
-            .frame(width: 60, height: 4)
+        }
+    }
+    // MARK: - Actions
+
+    private func revealInFinder(_ item: FileItem) {
+        #if os(macOS)
+        let urlToReveal: URL
+        // select output file if completed, otherwise original input file
+        if case .completed(let outURL) = item.status {
+            urlToReveal = outURL
+        } else {
+            urlToReveal = item.url
+        }
+        NSWorkspace.shared.activateFileViewerSelecting([urlToReveal])
+        #endif
+    }
+
+    private func delete(item: FileItem) {
+        // delete single row. requires recursive search if subfile deletion is needed later
+        if let index = viewModel.items.firstIndex(where: { $0.id == item.id }) {
+            viewModel.removeItems(at: IndexSet(integer: index))
+        }
+        withAnimation {
+            selectedFileID = nil
         }
     }
 }

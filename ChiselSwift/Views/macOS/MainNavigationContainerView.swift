@@ -60,11 +60,32 @@ struct MainNavigationContainerView: View {
                     .navigationTitle("Chisel")
                     .toolbar {
                         if !(viewModel.items.isEmpty) {
-                            ToolbarItem(placement: .automatic) {
-                                Button(action: { viewModel.clearItems() }) {
-                                    Label("Clear", systemImage: "trash")
+                            if selectedFileID != nil {
+                                ToolbarItem(placement: .automatic) {
+                                    Button(action: {
+                                        guard let selectedID = selectedFileID,
+                                              let index = viewModel.items.firstIndex(where: { $0.id == selectedID }) else { return }
+
+                                        withAnimation {
+                                            viewModel.removeItems(at: IndexSet(integer: index))
+                                            selectedFileID = nil
+                                        }
+
+                                    }) {
+                                        Label("Clear", systemImage: "document.on.trash")
+                                    }
                                 }
-                                .disabled(viewModel.isProcessing || viewModel.items.isEmpty)
+                            } else {
+                                ToolbarItem(placement: .automatic) {
+                                    Button(action: {
+                                        withAnimation {
+                                            viewModel.clearItems()
+                                        }
+                                    }) {
+                                        Label("Clear all", systemImage: "trash")
+                                    }
+                                    .disabled(viewModel.isProcessing)
+                                }
                             }
                         }
                         ToolbarItem(placement: .automatic) {
