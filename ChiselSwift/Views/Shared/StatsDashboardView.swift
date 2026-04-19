@@ -135,13 +135,55 @@ struct StatCardView: View {
 }
 
 #Preview("Light mode") {
-    StatsDashboardView()
-        .modelContainer(for: CompressionStat.self, inMemory: true)
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: CompressionStat.self, configurations: config)
+    let context = container.mainContext
+
+    // insert mock data for the charts
+    let mockData = [
+        CompressionStat(fileExtension: "pdf", originalSize: 25_000_000, compressedSize: 15_000_000, durationSeconds: 1.2),
+        CompressionStat(fileExtension: "png", originalSize: 8_500_000, compressedSize: 3_200_000, durationSeconds: 0.8),
+        CompressionStat(fileExtension: "zip", originalSize: 150_000_000, compressedSize: 95_000_000, durationSeconds: 4.5),
+        CompressionStat(fileExtension: "pdf", originalSize: 12_000_000, compressedSize: 8_000_000, durationSeconds: 0.9),
+        CompressionStat(fileExtension: "jpeg", originalSize: 4_200_000, compressedSize: 80_000, durationSeconds: 0.3)
+    ]
+
+    for stat in mockData {
+        context.insert(stat)
+    }
+
+    return StatsDashboardView()
+        .modelContainer(container)
         .preferredColorScheme(.light)
 }
 
+#Preview("Empty State") {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: CompressionStat.self, configurations: config)
+
+    return StatsDashboardView()
+        .modelContainer(container)
+}
+
 #Preview("Dark mode") {
-    StatsDashboardView()
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: CompressionStat.self, configurations: config)
+    let context = container.mainContext
+
+    // insert mock data for the charts
+    let mockData = [
+        CompressionStat(fileExtension: "pdf", originalSize: 25_000_000, compressedSize: 15_000_000, durationSeconds: 1.2),
+        CompressionStat(fileExtension: "png", originalSize: 8_500_000, compressedSize: 3_200_000, durationSeconds: 0.8),
+        CompressionStat(fileExtension: "zip", originalSize: 150_000_000, compressedSize: 95_000_000, durationSeconds: 4.5),
+        CompressionStat(fileExtension: "pdf", originalSize: 12_000_000, compressedSize: 8_000_000, durationSeconds: 0.9),
+        CompressionStat(fileExtension: "jpeg", originalSize: 4_200_000, compressedSize: 1_100_000, durationSeconds: 0.3)
+    ]
+
+    for stat in mockData {
+        context.insert(stat)
+    }
+
+    return StatsDashboardView()
         .modelContainer(for: CompressionStat.self, inMemory: true)
         .preferredColorScheme(.dark)
 }

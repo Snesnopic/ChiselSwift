@@ -89,24 +89,34 @@ struct FileInspectorView: View {
     @ViewBuilder
     private func previewView(for file: FileItem) -> some View {
         if let utType = UTType(filenameExtension: file.originalExtension), utType.conforms(to: .image) {
-            AsyncImage(url: file.url) { phase in
-                if let image = phase.image {
-                    image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxHeight: 140)
-                        .cornerRadius(8)
-                } else if phase.error != nil {
-                    // silently fail if the image cannot be read locally
-                    EmptyView()
-                } else {
-                    // loading state
-                    ProgressView()
-                        .frame(height: 140)
-                        .frame(maxWidth: .infinity)
+
+            if file.isPreviewAvailable {
+                AsyncImage(url: file.url) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxHeight: 140)
+                            .cornerRadius(8)
+                    } else if phase.error != nil {
+                        EmptyView()
+                    } else {
+                        ProgressView()
+                            .frame(height: 140)
+                            .frame(maxWidth: .infinity)
+                    }
                 }
+                .padding(.bottom, 8)
+            } else {
+                // file was cleaned up by the system
+                ContentUnavailableView(
+                    "Preview unavailable",
+                    systemImage: "eye.slash",
+                    description: Text("The temporary file has been cleaned up by the system.")
+                )
+                .frame(maxHeight: 140)
+                .padding(.bottom, 8)
             }
-            .padding(.bottom, 8)
         }
     }
 

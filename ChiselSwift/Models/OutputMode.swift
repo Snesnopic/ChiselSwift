@@ -10,7 +10,6 @@ enum OutputMode: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    // Localized, user-facing title for each mode
     var title: String {
         switch self {
         case .overwrite:

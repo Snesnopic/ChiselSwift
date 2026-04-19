@@ -31,18 +31,21 @@ struct FileItem: Identifiable, Equatable {
     var typeIconName: String {
             let ext = originalExtension.lowercased()
 
-            // 1. fast path: direct extension to filetype matching
+            // fast path: direct extension to filetype matching
             if let type = FileType(rawValue: ext) {
                 return fileTypeToCategory[type]?.iconName ?? "doc"
             }
 
-            // 2. fallback: system mime type resolution
+            // fallback: system mime type resolution
             if let mimeType = UTType(filenameExtension: ext)?.preferredMIMEType {
                 return mimeToCategory(mimeType).iconName
             }
 
-            // 3. absolute fallback
+            // absolute fallback
             return "doc"
+        }
+    var isPreviewAvailable: Bool {
+            FileManager.default.fileExists(atPath: tempURL.path)
         }
 }
 

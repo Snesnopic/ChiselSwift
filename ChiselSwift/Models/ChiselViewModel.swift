@@ -167,6 +167,9 @@ final class ChiselViewModel {
 
         var pendingStats: [CompressionStat] = []
         var startTimes: [String: CFAbsoluteTime] = [:]
+#if os(macOS)
+        await MenuBarProgressManager.shared.show(isDeterminate: true)
+#endif
 
         for await event in await chisel.process(files: urlsToProcess) {
             switch event {
@@ -271,6 +274,15 @@ final class ChiselViewModel {
                         parent.logs.append("[CHILD] \(finalMsg)")
                         logs.append("[CHILD] \(finalMsg)")
                     }
+#if os(macOS)
+                    // calculate overall percentage based on a snapshot to avoid exclusivity violations
+                    let snapshot = self.items
+                    let completed = snapshot.filter { if case .completed = $0.status { return true }; return false }.count
+                    let total = snapshot.count
+                    let percentage = total > 0 ? Double(completed) / Double(total) : 0
+                    MenuBarProgressManager.shared.updateProgress(percentage)
+
+#endif
                 }
 
             case .error(let path, let message):
@@ -337,7 +349,7 @@ final class ChiselViewModel {
 
         // stream has finished. check if it was due to a user stop.
         if isStopping {
-            markRemainingAsStopped(nodes: &items)
+            markRemainingAsStopped()
             isStopping = false
         }
 
@@ -364,25 +376,39 @@ final class ChiselViewModel {
     }
 
     // recursively updates files that were interrupted
-    private func markRemainingAsStopped(nodes: inout [FileItem]) {
-        for i in 0..<nodes.count {
-            let currentStatus = nodes[i].status
+    private func markRemainingAsStopped() {
+        var localItems = items
+        var logsToAppend: [String] = []
 
-            // if the file hasn't finished, mark it as stopped
-            // adjust this if your enum differs (e.g., matching .pending or .processing)
-            if case .pending = currentStatus {
-                nodes[i].status = .stopped
-                nodes[i].logs.append("PROCESS ABORTED BY USER")
-                logs.append("[\(nodes[i].url.lastPathComponent)] PROCESS ABORTED BY USER")
-            } else if case .processing = currentStatus {
-                nodes[i].status = .stopped
-                nodes[i].logs.append("PROCESS INTERRUPTED BY USER")
-                logs.append("[\(nodes[i].url.lastPathComponent)] PROCESS INTERRUPTED BY USER")
-            }
+        func traverseAndMark(nodes: inout [FileItem]) {
+            for i in 0..<nodes.count {
+                let currentStatus = nodes[i].status
 
-            if nodes[i].children != nil {
-                markRemainingAsStopped(nodes: &nodes[i].children!)
+                if case .pending = currentStatus {
+                    nodes[i].status = .stopped
+                    nodes[i].logs.append("PROCESS ABORTED BY USER")
+                    logsToAppend.append("[\(nodes[i].url.lastPathComponent)] PROCESS ABORTED BY USER")
+                } else if case .processing = currentStatus {
+                    nodes[i].status = .stopped
+                    nodes[i].logs.append("PROCESS INTERRUPTED BY USER")
+                    logsToAppend.append("[\(nodes[i].url.lastPathComponent)] PROCESS INTERRUPTED BY USER")
+                }
+
+                if nodes[i].children != nil {
+                    traverseAndMark(nodes: &nodes[i].children!)
+                }
             }
+        }
+
+        // mutate local copy
+        traverseAndMark(nodes: &localItems)
+
+        // write back exactly once
+        items = localItems
+
+        // safely trigger observable side-effects
+        if !logsToAppend.isEmpty {
+            logs.append(contentsOf: logsToAppend)
         }
     }
 
@@ -449,7 +475,6 @@ final class ChiselViewModel {
         return nil
     }
 
-    // updated signature: explicit createIfNeeded flag and isRoot boolean inside the closure
     private func updateItem(for path: String, createIfNeeded: Bool = true, action: (inout FileItem, inout FileItem?, Bool) -> Void) {
         guard let indexPath = findIndexPath(for: path, in: items), !indexPath.isEmpty else { return }
 
@@ -516,7 +541,16 @@ final class ChiselViewModel {
             }
         }
 
-        applyAction(nodes: &items, indices: ArraySlice(indexPath))
+                let rootIndex = indexPath.first!
+                var rootItem = items[rootIndex]
+                var localNodes = [rootItem]
+
+                var relativeIndices = Array(indexPath)
+                relativeIndices[0] = 0
+
+                applyAction(nodes: &localNodes, indices: ArraySlice(relativeIndices))
+
+                items[rootIndex] = localNodes[0]
     }
 
     private func generateUniqueURL(for url: URL) -> URL {
@@ -573,7 +607,7 @@ final class ChiselViewModel {
             print("CREATING BACKUP AND SWAPPING: \(backupURL.lastPathComponent)")
             try fm.moveItem(at: original, to: backupURL)
             try fm.moveItem(at: temp, to: original)
-            #if os(macOS)
+#if os(macOS)
         case .outputFolder:
             if let destFolder = getOutputFolderURL() {
                 if destFolder.startAccessingSecurityScopedResource() {
@@ -585,7 +619,7 @@ final class ChiselViewModel {
                     destFolder.stopAccessingSecurityScopedResource()
                 }
             }
-            #endif
+#endif
         }
     }
     func findItem(with id: UUID, in searchItems: [FileItem]? = nil) -> FileItem? {
