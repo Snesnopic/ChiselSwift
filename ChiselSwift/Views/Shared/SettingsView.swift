@@ -13,7 +13,22 @@ struct SettingsView: View {
     @AppStorage("outputMode") private var outputMode: OutputMode = .overwrite
     @AppStorage("outputFolderBookmark") private var outputFolderBookmark: Data?
 
+    @State private var showAdvancedSettings: Bool = false
+
     private let maxSystemThreads = max(1, ProcessInfo.processInfo.activeProcessorCount)
+
+    // description based on the current output mode
+    private var outputModeDescription: String {
+        let mode = outputMode.rawValue.lowercased()
+        if mode.contains("overwrite") {
+            return "Replaces the original files with the compressed versions. This action is destructive."
+        } else if mode.contains("folder") || mode.contains("directory") {
+            return "Saves the compressed files into the selected destination directory, leaving originals intact."
+        } else {
+            return "Creates a separate copy of the compressed file alongside the original."
+        }
+    }
+
 #if os(macOS)
 private var outputFolderURL: URL? {
     guard let data = outputFolderBookmark else { return nil }
@@ -39,15 +54,15 @@ private func selectFolder() {
     }
 }
 #endif
+
     var body: some View {
         NavigationStack {
             Form {
                 // MARK: - General Options
-
                 Section {
                     Picker("Output Mode", selection: $outputMode) {
                         ForEach(OutputMode.allCases) { mode in
-                            Text(mode.rawValue).tag(mode)
+                            Text(mode.title).tag(mode)
                         }
                     }
 #if os(macOS)
@@ -73,110 +88,32 @@ private func selectFolder() {
  #endif
                 } header: {
                     Text("General options")
+                } footer: {
+                    Text(outputModeDescription)
                 }
-                footer: {
-                        Text("""
-
-                            """)
-                    }
 
                 Section {
                     Toggle("Preserve file metadata", isOn: $preserveMetadata)
+                } footer: {
+                    Text("Keeps EXIF, XMP, color profiles, and timestamps. Disabling this yields slightly better compression but strips most non-essential data.")
                 }
-                footer: {
-                    Text("""
-                    Keeps EXIF, XMP, color profiles, and timestamps. Disabling this yields slightly better compression but strips most non-essential data.
-                    """)
-                }
+
                 Section {
                     Toggle("Verify data integrity", isOn: $verifyChecksums)
-                }  footer: {
-                    Text("""
-                    Perform an extra check after each compression to ensure the content of the modified file perfectly matches the original file. Guarantees that your files don't degrade in quality, but makes processing slower.
-                    """)
+                } footer: {
+                    Text("Perform an extra check after each compression to ensure the content of the modified file perfectly matches the original file. Guarantees that your files don't degrade in quality, but makes processing slower.")
                 }
+
                 Section {
                     Toggle("Hide unsupported subfiles", isOn: $hideUnsupported)
                 } footer: {
-                    Text("""
-                        Many container files, such as PDFs, contain a lot of internal files that can't be processed. This option hides these files.
-                        """)
+                    Text("Many container files, such as PDFs, contain a lot of internal files that can't be processed. This option hides these files.")
                 }
+
                 Section {
                     Toggle("Recursive folder import", isOn: $recursiveFolderImport)
                 } footer: {
-                    Text("""
-                        When dropping a folder, all files in subfolders will be added.
-                        """)
-                }
-
-                // MARK: - Compression Parameters
-                Section {
-                    VStack(alignment: .leading) {
-                        HStack {
-                            Text("Iterations")
-                            Spacer()
-                            Text("\(iterations)")
-                        }
-                        Slider(
-                            value: $iterations.asDouble,
-                            in: 1...500,
-                            step: 1
-                        )
-                    }
-
-                    VStack(alignment: .leading) {
-                        HStack {
-                            Text("Iterations on large files")
-                            Spacer()
-                            Text("\(iterationsLarge)")
-                        }
-                        Slider(
-                            value: $iterationsLarge.asDouble,
-                            in: 1...250,
-                            step: 1
-                        )
-                        HStack {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                            Text("Warning: high iteration count may significantly increase processing time! Use at your own risk!")
-                                .font(.caption)
-                        }
-                        .opacity((iterations > 100 || iterationsLarge > 30) ? 1 : 0)
-                        .foregroundStyle(.yellow)
-                    }
-                } header: {
-                    Text("Compression parameters")
-                } footer: {
-                    Text("""
-                    Amount of iterations of the zopfli algorithm on DEFLATE files. This affects PNGs, PDFs and some archives.
-                    Consider using a lower value for large files as it massively increases computation time.
-                    """)
-                }
-                Section {
-                    VStack(alignment: .leading) {
-                        HStack {
-                            Text("Maximum dictionary tokens")
-                            Spacer()
-                            Text("\(maxTokens)")
-                        }
-                        Slider(
-                            value: $maxTokens.asDouble,
-                            in: 1000...200000,
-                            step: 100
-                        )
-                        HStack {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                            Text("Warning: exceeding default tokens can drastically slow down processing! Use at your own risk!")
-                                .font(.caption)
-                        }
-                        .opacity((maxTokens > 10000) ? 1 : 0)
-                        .foregroundStyle(.yellow)
-                    }
-
-                } footer: {
-                    Text("""
-                    Amount of tokens used for flexigif compression. This affects GIF files.
-                    """)
+                    Text("When dropping a folder, all files in subfolders will be added.")
                 }
 
                 // MARK: - System Resources
@@ -205,6 +142,93 @@ private func selectFolder() {
                 } footer: {
                     Text("How many files to process in parallel. More threads will use more CPU but can also make the system unresponsive until all files are processed.")
                 }
+
+                // MARK: - Advanced
+                Section {
+                    Toggle("Show advanced compression parameters", isOn: $showAdvancedSettings)
+                } footer: {
+                    if !showAdvancedSettings {
+                        Text("Expand for fine-tuning some compression related parameters. Incorrectly set values severely degrade performance.")
+                    }
+                }
+
+                if showAdvancedSettings {
+                    Section {
+                        VStack(alignment: .leading) {
+                            HStack {
+                                Text("Iterations")
+                                Spacer()
+                                Text("\(iterations)")
+                            }
+                            Slider(
+                                value: $iterations.asDouble,
+                                in: 1...500,
+                                step: 1
+                            )
+                        }
+
+                        VStack(alignment: .leading) {
+                            HStack {
+                                Text("Iterations on large files")
+                                Spacer()
+                                Text("\(iterationsLarge)")
+                            }
+                            Slider(
+                                value: $iterationsLarge.asDouble,
+                                in: 1...250,
+                                step: 1
+                            )
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                Text("Warning: high iteration count massively increases computational overhead.")
+                                    .font(.caption)
+                            }
+                            .opacity((iterations > 100 || iterationsLarge > 30) ? 1 : 0)
+                            .foregroundStyle(.yellow)
+                        }
+                    } header: {
+                        Text("Zopfli / Deflate")
+                    } footer: {
+                        Text("Amount of iterations of the zopfli algorithm on deflate files (pngs, pdfs, archives).")
+                    }
+
+                    Section {
+                        VStack(alignment: .leading) {
+                            HStack {
+                                Text("Maximum dictionary tokens")
+                                Spacer()
+                                Text("\(maxTokens)")
+                            }
+                            Slider(
+                                value: $maxTokens.asDouble,
+                                in: 1000...200000,
+                                step: 100
+                            )
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                Text("Warning: exceeding default tokens can drastically slow down flexigif processing.")
+                                    .font(.caption)
+                            }
+                            .opacity((maxTokens > 10000) ? 1 : 0)
+                            .foregroundStyle(.yellow)
+                        }
+                    } header: {
+                        Text("Flexigif")
+                    } footer: {
+                        Text("Amount of tokens used for flexigif compression.")
+                    }
+
+                    // reset defaults button for safety
+                    Section {
+                        Button(role: .destructive) {
+                            iterations = 15
+                            iterationsLarge = 5
+                            maxTokens = 10000
+                        } label: {
+                            Text("Reset advanced parameters to defaults")
+                        }
+                    }
+                }
             }
             .navigationTitle("Settings")
 #if os(macOS)
@@ -218,13 +242,13 @@ private func selectFolder() {
     }
 }
 
-#Preview("Light Mode") {
+#Preview("Light mode") {
     SettingsView()
         .modelContainer(for: CompressionStat.self, inMemory: true)
         .preferredColorScheme(.light)
 }
 
-#Preview("Dark Mode") {
+#Preview("Dark mode") {
     SettingsView()
         .modelContainer(for: CompressionStat.self, inMemory: true)
         .preferredColorScheme(.dark)

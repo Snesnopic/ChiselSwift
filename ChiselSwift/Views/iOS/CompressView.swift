@@ -187,7 +187,10 @@ struct CompressView: View {
         NavigationLink(destination: FileInspectorView(file: item, allLogs: viewModel.logs)) {
             HStack {
                 Image(systemName: item.typeIconName)
-                    .foregroundColor(.blue)
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(.blue)
+                    .symbolRenderingMode(.hierarchical)
 
                 VStack(alignment: .leading) {
                     Text(item.url.lastPathComponent)

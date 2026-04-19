@@ -16,8 +16,11 @@ struct CompressionListView: View {
             List(viewModel.items, children: \.children, selection: $selectedFileID) { item in
                 HStack(spacing: 12) {
                     Image(systemName: item.typeIconName)
-                        .foregroundStyle(.blue)
-                        .frame(width: 20)
+                        .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .foregroundStyle(.blue)
+                            .symbolRenderingMode(.hierarchical)
 
                     VStack(alignment: .leading) {
                         Text(item.url.lastPathComponent)
