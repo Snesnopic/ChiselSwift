@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9D86508C2F8C2CE100A03D31 /* Chisel in Frameworks */ = {isa = PBXBuildFile; productRef = 9D86508B2F8C2CE100A03D31 /* Chisel */; };
 		9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D8650902F8C2D5200A03D31 /* libiconv.tbd */; };
+		9DABBA652FAA4EF500EEC2E8 /* Chisel in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD5A8CA2F96568800F54E92 /* Chisel */; };
 		9DDE60EC2F8CE4CA001CA9A1 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */; };
 		9DFE00212F92763800C4F91C /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 9DFE00202F92763800C4F91C /* .swiftlint.yml */; };
 /* End PBXBuildFile section */
@@ -16,7 +16,9 @@
 /* Begin PBXFileReference section */
 		9D86507C2F8C2CB700A03D31 /* Chisel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Chisel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D8650902F8C2D5200A03D31 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
+		9DD5A8FF2F9690AF00F54E92 /* stdlib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = stdlib.a; path = ../../.opam/4.14.0/lib/ocaml/stdlib.a; sourceTree = "<group>"; };
 		9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		9DF244FC2F96BDB600F08CA8 /* libcamlrun.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcamlrun.a; path = ../../.opam/4.14.0/lib/ocaml/libcamlrun.a; sourceTree = "<group>"; };
 		9DFE00202F92763800C4F91C /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -52,8 +54,8 @@
 		9D8650792F8C2CB700A03D31 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				9DABBA652FAA4EF500EEC2E8 /* Chisel in Frameworks */,
 				9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */,
-				9D86508C2F8C2CE100A03D31 /* Chisel in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -81,6 +83,8 @@
 		9D86508F2F8C2D5200A03D31 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				9DF244FC2F96BDB600F08CA8 /* libcamlrun.a */,
+				9DD5A8FF2F9690AF00F54E92 /* stdlib.a */,
 				9D8650902F8C2D5200A03D31 /* libiconv.tbd */,
 			);
 			name = Frameworks;
@@ -106,6 +110,8 @@
 			name = ChiselSwift;
 			packageProductDependencies = (
 				9D86508B2F8C2CE100A03D31 /* Chisel */,
+				9DD5A8CA2F96568800F54E92 /* Chisel */,
+				9DD5A9142F96A2AD00F54E92 /* Chisel */,
 			);
 			productName = testchisel;
 			productReference = 9D86507C2F8C2CB700A03D31 /* Chisel.app */;
@@ -136,7 +142,7 @@
 			mainGroup = 9D8650732F8C2CB700A03D31;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				9D86508A2F8C2CE100A03D31 /* XCLocalSwiftPackageReference "../ChiselKit" */,
+				9DD5A9132F96A2AD00F54E92 /* XCLocalSwiftPackageReference "../ChiselKit" */,
 			);
 			preferredProjectObjectVersion = 100;
 			productRefGroup = 9D86507D2F8C2CB700A03D31 /* Products */;
@@ -344,6 +350,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.snesnopic.chiselswift;
@@ -356,8 +363,10 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
+				SWIFT_STRICT_MEMORY_SAFETY = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -392,6 +401,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.snesnopic.chiselswift;
@@ -404,8 +414,10 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
+				SWIFT_STRICT_MEMORY_SAFETY = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -432,7 +444,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		9D86508A2F8C2CE100A03D31 /* XCLocalSwiftPackageReference "../ChiselKit" */ = {
+		9DD5A9132F96A2AD00F54E92 /* XCLocalSwiftPackageReference "../ChiselKit" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../ChiselKit;
 		};
@@ -440,6 +452,14 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		9D86508B2F8C2CE100A03D31 /* Chisel */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Chisel;
+		};
+		9DD5A8CA2F96568800F54E92 /* Chisel */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Chisel;
+		};
+		9DD5A9142F96A2AD00F54E92 /* Chisel */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Chisel;
 		};

@@ -9,6 +9,10 @@ import SwiftUI
 @MainActor
 final class ChiselViewModel {
     var items: [FileItem] = []
+
+    // files that won't actually be processed because we know they are incompatible
+    var unsupportedURLs: [URL] = []
+
     var logs: [String] = []
     var isProcessing = false
     var isStopping = false
@@ -17,11 +21,18 @@ final class ChiselViewModel {
         !isProcessing && !items.isEmpty && items.contains { $0.status == .pending }
     }
 
+    var libraryVersion: String = "Loading..."
+    func fetchVersion() {
+        Task {
+            let chisel = Chisel()
+            self.libraryVersion = await chisel.version
+        }
+    }
+
     var activeSecurityBookmarks: Set<URL> = []
-#if os(macOS)
     @ObservationIgnored
     @AppStorage("outputFolderBookmark") private var outputFolderBookmark: Data?
-
+    #if os(macOS)
     func selectOutputFolder() {
 
         let panel = NSOpenPanel()
@@ -34,33 +45,64 @@ final class ChiselViewModel {
         }
 
     }
+#endif
+    var sessionAuthorizedFolders: Set<URL> = []
 
-    private func saveBookmark(for url: URL) {
-        do {
-            // create a persistent bookmark
-            let bookmarkData = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
-            self.outputFolderBookmark = bookmarkData
-        } catch {
-            print("ERROR SAVING BOOKMARK: \(error)")
-        }
-    }
+    func saveBookmark(for url: URL) {
+            do {
+                guard url.startAccessingSecurityScopedResource() else { return }
+                defer { url.stopAccessingSecurityScopedResource() }
 
-    func getOutputFolderURL() -> URL? {
-        guard let data = outputFolderBookmark else { return nil }
-        var isStale = false
-        do {
-            let url = try URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
-            if isStale {
-                // bookmark is old, should ask again or refresh
-                saveBookmark(for: url)
+                #if os(macOS)
+                let options: URL.BookmarkCreationOptions = .withSecurityScope
+                #else
+                let options: URL.BookmarkCreationOptions = .minimalBookmark
+                #endif
+
+                let bookmarkData = try url.bookmarkData(options: options, includingResourceValuesForKeys: nil, relativeTo: nil)
+                self.outputFolderBookmark = bookmarkData
+            } catch {
+                print("ERROR SAVING BOOKMARK: \(error)")
             }
-            return url
-        } catch {
-            print("ERROR RESOLVING BOOKMARK: \(error)")
+        }
+    func getOutputFolderURL() -> URL? {
+            guard let data = outputFolderBookmark else { return nil }
+            var isStale = false
+            do {
+                #if os(macOS)
+                let options: URL.BookmarkResolutionOptions = .withSecurityScope
+                #else
+                let options: URL.BookmarkResolutionOptions = []
+                #endif
+
+                let url = try URL(resolvingBookmarkData: data, options: options, relativeTo: nil, bookmarkDataIsStale: &isStale)
+                if isStale {
+                    saveBookmark(for: url)
+                }
+                return url
+            } catch {
+                print("ERROR RESOLVING BOOKMARK: \(error)")
+                return nil
+            }
+        }
+
+    func findMissingPermissionDirectory(for mode: OutputMode) -> URL? {
+            if mode == .overwrite { return nil }
+
+            if mode == .outputFolder && getOutputFolderURL() == nil {
+                return URL(fileURLWithPath: "GLOBAL_OUTPUT_FOLDER")
+            }
+
+            if mode == .sideBySide || mode == .keepOriginal {
+                for item in items where item.status == .pending {
+                    let dir = item.url.deletingLastPathComponent()
+                    if !FileManager.default.isWritableFile(atPath: dir.path) && !sessionAuthorizedFolders.contains(dir) {
+                        return dir
+                    }
+                }
+            }
             return nil
         }
-    }
-#endif
 
     func addFiles(urls: [URL], recursive: Bool) {
         print("IMPORTING \(urls.count) ROOT ITEMS (RECURSIVE: \(recursive))")
@@ -84,9 +126,20 @@ final class ChiselViewModel {
                 // it's a single file
                 filesToProcess.append(rootURL)
             }
-
+            let chisel = Chisel()
             // copy children while the parent's security scope is still active
             for fileURL in filesToProcess {
+                var bool: Bool = true
+                Task {
+                    bool = await chisel.isCompatible(file: fileURL)
+                }
+                guard bool else {
+                    if !unsupportedURLs.contains(fileURL) {
+                        unsupportedURLs.append(fileURL)
+                        print("SKIPPED UNSUPPORTED FILE: \(fileURL.lastPathComponent)")
+                    }
+                    continue // Saltiamo questo file e passiamo al prossimo
+                }
                 let destinationURL = tempDirectory.appendingPathComponent(fileURL.lastPathComponent)
 
                 do {
@@ -607,7 +660,6 @@ final class ChiselViewModel {
             print("CREATING BACKUP AND SWAPPING: \(backupURL.lastPathComponent)")
             try fm.moveItem(at: original, to: backupURL)
             try fm.moveItem(at: temp, to: original)
-#if os(macOS)
         case .outputFolder:
             if let destFolder = getOutputFolderURL() {
                 if destFolder.startAccessingSecurityScopedResource() {
@@ -619,7 +671,6 @@ final class ChiselViewModel {
                     destFolder.stopAccessingSecurityScopedResource()
                 }
             }
-#endif
         }
     }
     func findItem(with id: UUID, in searchItems: [FileItem]? = nil) -> FileItem? {

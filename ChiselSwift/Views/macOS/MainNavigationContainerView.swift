@@ -29,7 +29,7 @@ struct MainNavigationContainerView: View {
     @AppStorage("threads") private var threads: Int = max(1, ProcessInfo.processInfo.activeProcessorCount / 2)
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
     @AppStorage("recursiveFolderImport") private var recursiveFolderImport: Bool = true
-    @AppStorage("outputMode") private var outputMode: OutputMode = .overwrite
+    @AppStorage("outputMode") private var outputMode: OutputMode = .keepOriginal
 
     @Environment(\.modelContext) private var modelContext
 
@@ -41,7 +41,7 @@ struct MainNavigationContainerView: View {
                     Label("Compress", systemImage: "rectangle.compress.vertical")
                 }
                 NavigationLink(value: NavigationSection.stats) {
-                    Label("Statistics", systemImage: "chart.bar.xaxis")
+                    Label("Statistics", systemImage: "chart.bar")
                 }
                 Divider()
                 NavigationLink(value: NavigationSection.settings) {
@@ -150,7 +150,7 @@ struct MainNavigationContainerView: View {
             case .settings:
                 SettingsView()
             case .about:
-                AboutView()
+                AboutView(viewModel: viewModel)
             case .none:
                 Text("Select a section from the sidebar")
             }

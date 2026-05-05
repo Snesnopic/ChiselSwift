@@ -89,6 +89,51 @@ extension FileCategory {
         case .unknown: return "doc"
         }
     }
+    static func category(for ext: String) -> FileCategory {
+            // Rimuoviamo il punto iniziale se presente e uniformiamo in minuscolo
+            let cleanExt = ext.hasPrefix(".") ? String(ext.dropFirst()).lowercased() : ext.lowercased()
+
+            switch cleanExt {
+
+            // MARK: - Images
+            case "jpg", "jpeg", "jpe", "png", "gif", "webp", "jxl", "tif", "tiff", "tga", "targa", "bmp", "dib", "ico", "cur", "icns", "gft", "pnm", "ppm", "pgm", "ora", "svg":
+                return .image
+
+            // MARK: - Audio
+            case "mp3", "m4a", "m4b", "wav", "flac", "ogg", "oga", "opus", "aif", "aiff", "aifc", "ape", "wv", "wvc", "wvp", "dsf", "dff", "mpc", "mp+", "mpp", "tta", "wma":
+                return .audio
+
+            // MARK: - Video
+            // N.B: mp4, mkv e webm li ho messi in Video per differenziarli dall'audio puro,
+            // anche se nei container Matroska/MP4 c'è l'audio. È la UX più intuitiva.
+            case "mp4", "mkv", "webm", "wmv", "asf", "swf":
+                return .video
+
+            // MARK: - Documents
+            // Includiamo Office, Ebook, XML data, Fumetti (cbt/cbz) e installer (msi) come da tuo README
+            case "pdf", "xml", "xhtml", "kml", "gpx", "dae", "rss", "atom", "xmp", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "msi", "odt", "ods", "odp", "odg", "odf", "epub", "fb2", "cbz", "cbt", "xps", "oxps", "dwfx", "3mf", "kmz":
+                return .document
+
+            // MARK: - Archives
+            case "zip", "tar", "gz", "bz2", "xz", "lzma", "iso", "cpio", "a", "ar", "lib", "br", "zst", "tzst", "jar", "xpi", "apk", "vsix", "nupkg", "war", "ear", "aab", "rdb":
+                return .archive
+
+            // MARK: - Fonts
+            case "woff", "woff2":
+                return .font
+
+            // MARK: - Scientific
+            case "mseed", "mseed2", "mseed3":
+                return .scientific
+
+            // MARK: - Databases
+            case "sqlite", "sqlite3", "db":
+                return .database
+
+            default:
+                return .unknown
+            }
+        }
 }
 
 enum FileType: String {

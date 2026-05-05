@@ -20,19 +20,19 @@ struct StatusBadgeView: View {
 
         case .noGain:
             Image(systemName: "equal.circle.fill")
-                .foregroundColor(.yellow)
+                .foregroundColor(.blue)
 
         case .skipped:
             Image(systemName: "forward.end.circle.fill")
-                .foregroundColor(.blue)
+                .foregroundColor(.yellow)
 
         case .error:
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundColor(.red)
 
         case .stopped:
-            Image(systemName: "stop.fill")
-                .foregroundColor(.red)
+            Image(systemName: "clock")
+                .foregroundColor(.gray)
         }
     }
 }
@@ -45,6 +45,7 @@ struct StatusBadgeView: View {
         StatusBadgeView(status: .noGain)
         StatusBadgeView(status: .skipped)
         StatusBadgeView(status: .error(""))
+        StatusBadgeView(status: .stopped)
     }
     .padding()
     .preferredColorScheme(.light)
@@ -58,6 +59,7 @@ struct StatusBadgeView: View {
         StatusBadgeView(status: .noGain)
         StatusBadgeView(status: .skipped)
         StatusBadgeView(status: .error(""))
+        StatusBadgeView(status: .stopped)
     }
     .padding()
     .preferredColorScheme(.dark)

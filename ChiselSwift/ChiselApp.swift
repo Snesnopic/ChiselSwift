@@ -17,7 +17,7 @@ struct ChiselApp: App {
             SettingsView()
         }
         Window("About", id: "about") {
-            AboutView()
+            AboutView(viewModel: ChiselViewModel())
         }
         #endif
     }

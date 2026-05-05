@@ -35,11 +35,14 @@ struct StatsDashboardView: View {
     var body: some View {
         NavigationStack {
             if stats.isEmpty {
-                ContentUnavailableView(
-                    "No statistics yet",
-                    systemImage: "chart.pie",
-                    description: Text("Come back when you'll have compressed some files!")
-                )
+                ContentUnavailableView {
+                    Label("No statistics yet", systemImage: "chart.pie")
+                } description: {
+                    Text("Come back when you'll have compressed some files!")
+                }
+                #if !os(macOS)
+                .background(Color(uiColor: UIColor.systemGroupedBackground))
+                #endif
                 .navigationTitle("Statistics")
             } else {
                 ScrollView {
@@ -219,7 +222,11 @@ struct FormatChartCard: View {
     }
 
     return StatsDashboardView()
+    #if os(macOS)
+        .frame(width: 600.0, height: 600.0, alignment: .center)
+    #endif
         .modelContainer(container)
+
         .preferredColorScheme(.light)
 }
 

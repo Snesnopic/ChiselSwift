@@ -3,7 +3,11 @@ import SwiftData
 import UniformTypeIdentifiers
 
 struct CompressView: View {
-    @State private var viewModel = ChiselViewModel()
+    @State private var missingFolderURL: URL?
+    @State private var showPermissionAlert = false
+    @State private var isPermissionPickerPresented = false
+
+    @State var viewModel = ChiselViewModel()
     @State private var isImporterPresented = false
 
     // state for global logs modal
@@ -15,7 +19,7 @@ struct CompressView: View {
     @AppStorage("threads") private var threads: Int = 4
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
     @AppStorage("recursiveFolderImport") private var recursiveFolderImport: Bool = true
-    @AppStorage("outputMode") private var outputMode: OutputMode = .overwrite
+    @AppStorage("outputMode") private var outputMode: OutputMode = .keepOriginal
 
     @Environment(\.modelContext) private var modelContext
 
@@ -30,11 +34,12 @@ struct CompressView: View {
     var body: some View {
         NavigationStack {
             if viewModel.items.isEmpty {
-                ContentUnavailableView(
-                    "No files selected",
-                    systemImage: "tray.and.arrow.down.fill",
-                    description: descriptionText
-                )
+                ContentUnavailableView {
+                        Label("No files selected", systemImage: "tray.and.arrow.down.fill")
+                    } description: {
+                        descriptionText.lineLimit(1)
+                    }
+                    .background(Color(uiColor: UIColor.systemGroupedBackground))
                 .dropDestination(for: URL.self) { items, _ in
                     viewModel.addFiles(urls: items, recursive: recursiveFolderImport)
                     return true
@@ -96,6 +101,18 @@ struct CompressView: View {
                     viewModel.addFiles(urls: items, recursive: recursiveFolderImport)
                     return true
                 }
+                .alert("Permission required", isPresented: $showPermissionAlert) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Select folder") {
+                        isPermissionPickerPresented = true
+                    }
+                } message: {
+                    if missingFolderURL?.path == "GLOBAL_OUTPUT_FOLDER" {
+                        Text("Please select a default output folder for your compressed files.")
+                    } else {
+                        Text("To save files alongside the originals, Chisel needs permission to access '\(missingFolderURL?.lastPathComponent ?? "the folder")'. Please select it in the next screen to grant access.")
+                    }
+                }
                 .fileImporter(
                     isPresented: $isImporterPresented,
                     allowedContentTypes: [.data, .folder],
@@ -114,23 +131,35 @@ struct CompressView: View {
                         FileInspectorView(file: nil, allLogs: viewModel.logs)
                             .toolbar {
                                 ToolbarItem(placement: .cancellationAction) {
-                                    Button("Close") { showGlobalLogs = false }
+
+                                    Button(role: .cancel) {
+                                        showGlobalLogs = false
+                                    } label: {
+                                        Image(systemName: "xmark")
+                                    }
+
                                 }
                             }
                     }
+                    .presentationDragIndicator(.visible)
                 }
                 .safeAreaInset(edge: .bottom) {
                     Button(action: {
-                        Task {
-                            await viewModel.startProcessing(
-                                iterations: iterations,
-                                iterationsLarge: iterationsLarge,
-                                maxTokens: maxTokens,
-                                threads: threads,
-                                hideUnsupported: hideUnsupported,
-                                outputMode: outputMode,
-                                context: modelContext
-                            )
+                        if let missingDir = viewModel.findMissingPermissionDirectory(for: outputMode) {
+                            missingFolderURL = missingDir
+                            showPermissionAlert = true
+                        } else {
+                            Task {
+                                await viewModel.startProcessing(
+                                    iterations: iterations,
+                                    iterationsLarge: iterationsLarge,
+                                    maxTokens: maxTokens,
+                                    threads: threads,
+                                    hideUnsupported: hideUnsupported,
+                                    outputMode: outputMode,
+                                    context: modelContext
+                                )
+                            }
                         }
                     }) {
                         HStack(spacing: 8) {
@@ -158,6 +187,71 @@ struct CompressView: View {
                         .padding()
                     }
                     .disabled(viewModel.isStopping || (!viewModel.canStartProcessing && !viewModel.isProcessing))
+                    .fileImporter(
+                        isPresented: $isPermissionPickerPresented,
+                        allowedContentTypes: [.folder],
+                        allowsMultipleSelection: false
+                    ) { result in
+                        switch result {
+                        case .success(let urls):
+                            guard let url = urls.first else { return }
+
+                            if missingFolderURL?.path == "GLOBAL_OUTPUT_FOLDER" {
+                                viewModel.saveBookmark(for: url)
+                            } else {
+                                if url.startAccessingSecurityScopedResource() {
+                                    viewModel.sessionAuthorizedFolders.insert(url)
+                                }
+                            }
+                            Task {
+                                await viewModel.startProcessing(
+                                    iterations: iterations,
+                                    iterationsLarge: iterationsLarge,
+                                    maxTokens: maxTokens,
+                                    threads: threads,
+                                    hideUnsupported: hideUnsupported,
+                                    outputMode: outputMode,
+                                    context: modelContext
+                                )
+                            }
+                        case .failure(let error):
+                            print("PERMISSION IMPORT FAILED: \(error)")
+                        }
+                    }
+                    .fileDialogDefaultDirectory(missingFolderURL)
+                }
+                if !viewModel.unsupportedURLs.isEmpty {
+                    Section {
+                        DisclosureGroup {
+                            ForEach($viewModel.unsupportedURLs, id: \.self) { url in
+                                let realUrl = url.wrappedValue
+                                HStack {
+                                    let category = FileCategory.category(for: realUrl.pathExtension)
+
+                                    Image(systemName: category.iconName)
+                                        .frame(width: 24, height: 24)
+                                        .foregroundStyle(.gray)
+
+                                    Text(realUrl.lastPathComponent)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.gray)
+
+                                    Spacer()
+
+                                    Text("Unsupported")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .foregroundStyle(.yellow)
+                                Text("\(viewModel.unsupportedURLs.count) unsupported files skipped")
+                                    .font(.headline)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -233,8 +327,117 @@ struct FileRowView: View {
         .preferredColorScheme(.light)
 }
 
+#Preview("Populated List - Light mode") {
+    let mockViewModel = ChiselViewModel()
+
+    var containerFile = FileItem(
+        url: URL(fileURLWithPath: "/Users/mario/Documents/Report_Annuale_2026.pdf"),
+        tempURL: URL(fileURLWithPath: "/tmp/Report_Annuale_2026.pdf"),
+        status: .processing,
+        size: 15_400_000,
+        originalExtension: "pdf"
+    )
+
+    var child1 = FileItem(
+        url: URL(fileURLWithPath: "/tmp/extracted/image_1.png"),
+        tempURL: URL(fileURLWithPath: "/tmp/extracted/image_1.png"),
+        status: .completed(URL(fileURLWithPath: "/tmp/extracted/image_1_compressed.png")),
+        size: 4_200_000,
+        originalExtension: "png"
+    )
+    child1.sizeAfter = 1_150_000
+
+    var child2 = FileItem(
+        url: URL(fileURLWithPath: "/tmp/extracted/font_logo.ttf"),
+        tempURL: URL(fileURLWithPath: "/tmp/extracted/font_logo.ttf"),
+        status: .noGain,
+        size: 450_000,
+        originalExtension: "ttf"
+    )
+
+    var child3 = FileItem(
+        url: URL(fileURLWithPath: "/tmp/extracted/image_2.png"),
+        tempURL: URL(fileURLWithPath: "/tmp/extracted/image_2.png"),
+        status: .processing,
+        size: 2_800_000,
+        originalExtension: "png"
+    )
+
+    containerFile.children = [child1, child2, child3]
+
+    let pendingFile = FileItem(
+        url: URL(fileURLWithPath: "/Users/mario/Downloads/Archivio_Foto_Vacanze.zip"),
+        tempURL: URL(fileURLWithPath: "/tmp/Archivio_Foto_Vacanze.zip"),
+        status: .pending,
+        size: 150_000_000,
+        originalExtension: "zip"
+    )
+
+    let errorFile = FileItem(
+        url: URL(fileURLWithPath: "/Users/mario/Desktop/video_presentazione.mp4"),
+        tempURL: URL(fileURLWithPath: "/tmp/video_presentazione.mp4"),
+        status: .error("Formato non supportato dal motore"),
+        size: 85_000_000,
+        originalExtension: "mp4"
+    )
+
+    mockViewModel.items = [containerFile, pendingFile]
+    mockViewModel.unsupportedURLs = [URL(fileURLWithPath: "/Users/mario/Desktop/video_presentazione.mp4")]
+
+    return CompressView(viewModel: mockViewModel)
+        .modelContainer(for: CompressionStat.self, inMemory: true)
+        .preferredColorScheme(.light)
+}
+
 #Preview("Dark mode") {
     CompressView()
+        .modelContainer(for: CompressionStat.self, inMemory: true)
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Populated List - Dark mode") {
+    let mockViewModel = ChiselViewModel()
+
+    var containerFile = FileItem(
+        url: URL(fileURLWithPath: "/Users/mario/Documents/Fatture_Q1.pdf"),
+        tempURL: URL(fileURLWithPath: "/tmp/Fatture_Q1.pdf"),
+        status: .completed(URL(fileURLWithPath: "/tmp/Fatture_Q1_compressed.pdf")),
+        size: 8_200_000,
+        originalExtension: "pdf"
+    )
+    containerFile.sizeAfter = 3_100_000
+
+    var child1 = FileItem(
+        url: URL(fileURLWithPath: "/tmp/extracted/scan_01.jpeg"),
+        tempURL: URL(fileURLWithPath: "/tmp/extracted/scan_01.jpeg"),
+        status: .completed(URL(fileURLWithPath: "/tmp/extracted/scan_01_compressed.jpeg")),
+        size: 4_100_000,
+        originalExtension: "jpeg"
+    )
+    child1.sizeAfter = 1_500_000
+
+    var child2 = FileItem(
+        url: URL(fileURLWithPath: "/tmp/extracted/scan_02.jpeg"),
+        tempURL: URL(fileURLWithPath: "/tmp/extracted/scan_02.jpeg"),
+        status: .completed(URL(fileURLWithPath: "/tmp/extracted/scan_02_compressed.jpeg")),
+        size: 4_100_000,
+        originalExtension: "jpeg"
+    )
+    child2.sizeAfter = 1_600_000
+
+    containerFile.children = [child1, child2]
+
+    let stoppedFile = FileItem(
+        url: URL(fileURLWithPath: "/Users/mario/Downloads/Backup_Sito.tar.gz"),
+        tempURL: URL(fileURLWithPath: "/tmp/Backup_Sito.tar.gz"),
+        status: .stopped,
+        size: 1_050_000_000,
+        originalExtension: "gz"
+    )
+
+    mockViewModel.items = [containerFile, stoppedFile]
+
+    return CompressView(viewModel: mockViewModel)
         .modelContainer(for: CompressionStat.self, inMemory: true)
         .preferredColorScheme(.dark)
 }

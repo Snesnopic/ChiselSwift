@@ -44,27 +44,33 @@ struct FileInspectorView: View {
                 .padding()
             } else {
                 // global terminal when no file is selected
-                VStack(alignment: .leading) {
-                    Text("Global logs")
-                        .font(.headline)
-                        .padding([.top, .horizontal])
+                NavigationStack {
+                    VStack(alignment: .leading) {
 
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 4) {
-                            if allLogs.isEmpty {
-                                Text("No logs generated yet")
-                                    .foregroundStyle(.secondary)
-                            } else {
-                                logTerminalView(logs: allLogs, title: nil)
+                        ScrollView {
+                            LazyVStack(alignment: .leading, spacing: 4) {
+                                if allLogs.isEmpty {
+                                    Text("No logs generated yet")
+                                        .foregroundStyle(.secondary)
+                                } else {
+                                    logTerminalView(logs: allLogs, title: nil)
+                                }
                             }
+                            .font(.system(.caption2, design: .monospaced))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                            .padding(8)
+
+                            #if !os(macOS)
+                            .background(Color(uiColor: UIColor.systemGroupedBackground))
+                            #endif
                         }
-                        .font(.system(.caption2, design: .monospaced))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(8)
-                        .background(.background)
-                        .cornerRadius(4)
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
+                    .navigationTitle("Global logs")
+                    #if !os(macOS)
+                    .navigationBarTitleDisplayMode(.inline)
+                    #endif
                 }
             }
         }
@@ -201,6 +207,11 @@ struct FileInspectorView: View {
     )
     .modelContainer(for: CompressionStat.self, inMemory: true)
     .preferredColorScheme(.light)
+}
+
+#Preview("No file") {
+    FileInspectorView(file: nil, allLogs: ["Prova"])
+        .modelContainer(for: CompressionStat.self, inMemory: true)
 }
 
 #Preview("Dark mode") {

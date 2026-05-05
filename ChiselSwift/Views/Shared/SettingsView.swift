@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @AppStorage("iterations") private var iterations: Int = 15
@@ -10,8 +11,10 @@ struct SettingsView: View {
     @AppStorage("threads") private var threads: Int = max(1, ProcessInfo.processInfo.activeProcessorCount / 2)
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
     @AppStorage("recursiveFolderImport") private var recursiveFolderImport: Bool = true
-    @AppStorage("outputMode") private var outputMode: OutputMode = .overwrite
+    @AppStorage("outputMode") private var outputMode: OutputMode = .keepOriginal
     @AppStorage("outputFolderBookmark") private var outputFolderBookmark: Data?
+
+    @State private var isFolderPickerPresented = false
 
     @State private var showAdvancedSettings: Bool = false
 
@@ -29,13 +32,17 @@ struct SettingsView: View {
         }
     }
 
+    private var outputFolderURL: URL? {
+        guard let data = outputFolderBookmark else { return nil }
+        var isStale = false
 #if os(macOS)
-private var outputFolderURL: URL? {
-    guard let data = outputFolderBookmark else { return nil }
-    var isStale = false
-    return try? URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
-}
-
+        let options: URL.BookmarkResolutionOptions = .withSecurityScope
+#else
+        let options: URL.BookmarkResolutionOptions = []
+#endif
+        return try? URL(resolvingBookmarkData: data, options: options, relativeTo: nil, bookmarkDataIsStale: &isStale)
+    }
+#if os(macOS)
 private func selectFolder() {
     let panel = NSOpenPanel()
     panel.canCreateDirectories = true
@@ -54,13 +61,13 @@ private func selectFolder() {
     }
 }
 #endif
-
+    @State private var viewModel = ChiselViewModel()
     var body: some View {
         NavigationStack {
             Form {
 #if !os(macOS)
                 Section {
-                    NavigationLink(destination: AboutView()) {
+                    NavigationLink(destination: AboutView(viewModel: viewModel)) {
                         HStack(spacing: 12) {
                             Image(systemName: "info.circle")
                                 .foregroundStyle(Color.accentColor)
@@ -70,14 +77,14 @@ private func selectFolder() {
                     }
                 }
 #endif
-                // MARK: - General Options
+                // MARK: - General options
                 Section {
-                    Picker("Output Mode", selection: $outputMode) {
+                    Picker("Output mode", selection: $outputMode) {
                         ForEach(OutputMode.allCases) { mode in
                             Text(mode.title).tag(mode)
                         }
                     }
-#if os(macOS)
+
                     if outputMode == .outputFolder {
                         HStack {
                             Text("Destination:")
@@ -85,19 +92,26 @@ private func selectFolder() {
 
                             Spacer()
 
-                            Button(outputFolderURL != nil ? outputFolderURL!.lastPathComponent : "Choose folder...") {
+                            Button(outputFolderURL != nil ? outputFolderURL!.displayFolderName : "Choose folder...") {
+                                #if os(macOS)
                                 selectFolder()
+                                #else
+                                isFolderPickerPresented = true
+                                #endif
                             }
                         }
-                        if let path = outputFolderURL?.path {
-                            Text(path)
+                        if let path = outputFolderURL {
+                            Text(path.userFriendlyPath)
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
                                 .truncationMode(.middle)
+                                .onAppear {
+                                    print(path)
+                                }
                         }
                     }
- #endif
+
                 } header: {
                     Text("General options")
                 } footer: {
@@ -125,7 +139,7 @@ private func selectFolder() {
                 Section {
                     Toggle("Recursive folder import", isOn: $recursiveFolderImport)
                 } footer: {
-                    Text("When dropping a folder, all files in subfolders will be added.")
+                    Text("When importing a folder, all files in subfolders will be added.")
                 }
 
                 // MARK: - System Resources
@@ -242,6 +256,22 @@ private func selectFolder() {
                     }
                 }
             }
+#if !os(macOS)
+            .fileImporter(
+                isPresented: $isFolderPickerPresented,
+                allowedContentTypes: [.folder],
+                allowsMultipleSelection: false
+            ) { result in
+                if case .success(let urls) = result, let url = urls.first {
+                    if url.startAccessingSecurityScopedResource() {
+                        defer { url.stopAccessingSecurityScopedResource() }
+                        if let bookmarkData = try? url.bookmarkData(options: .minimalBookmark, includingResourceValuesForKeys: nil, relativeTo: nil) {
+                            outputFolderBookmark = bookmarkData
+                        }
+                    }
+                }
+            }
+#endif
             .navigationTitle("Settings")
 #if os(macOS)
             .formStyle(.grouped)

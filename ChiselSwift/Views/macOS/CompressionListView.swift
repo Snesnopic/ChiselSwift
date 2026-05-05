@@ -7,11 +7,11 @@ struct CompressionListView: View {
 
     var body: some View {
         if viewModel.items.isEmpty {
-            ContentUnavailableView(
-                "No files selected",
-                systemImage: "tray.and.arrow.down.fill",
-                description: Text("Drag and drop files here, or use the add button to start compressing.")
-            )
+            ContentUnavailableView {
+                    Label("No files selected", systemImage: "tray.and.arrow.down.fill")
+                } description: {
+                    Text("Drag and drop files here, or use the add button to start compressing.")
+                }
         } else {
             List(viewModel.items, children: \.children, selection: $selectedFileID) { item in
                 let isError = isStatusError(item.status)
@@ -67,8 +67,8 @@ struct CompressionListView: View {
                         .buttonStyle(.plain)
                         .help("View error details")
                     }
-                    if let percentage = item.savingPercentage {
-                        SavingsBarView(percentage: percentage)
+                    if let percentage = item.savingPercentage, let sizeAfter = item.sizeAfter {
+                        SavingsBarView(percentage: percentage, saved: item.size - sizeAfter)
                     }
 
                     StatusBadgeView(status: item.status)
@@ -118,12 +118,21 @@ struct CompressionListView: View {
     }
     struct SavingsBarView: View {
         let percentage: Double
+        let saved: Int64?
 
         var body: some View {
             VStack(alignment: .trailing, spacing: 2) {
-                Text(String(format: "-%.1f%%", percentage))
-                    .font(.caption2).monospacedDigit()
-                    .foregroundStyle(.green)
+                if let saved {
+                    Text("Saved: \(ByteCountFormatter.string(fromByteCount: saved, countStyle: .memory))")
+                        .font(.caption2)
+                        .monospacedDigit()
+                        .foregroundStyle(.green)
+                } else {
+                    Text(String(format: "-%.1f%%", percentage))
+                        .font(.caption2)
+                        .monospacedDigit()
+                        .foregroundStyle(.green)
+                }
 
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {

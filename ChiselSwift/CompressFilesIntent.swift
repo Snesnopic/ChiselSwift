@@ -4,8 +4,8 @@ import SwiftData
 import Foundation
 
 struct CompressFilesIntent: AppIntent {
-    static var title: LocalizedStringResource = "Compress with Chisel"
-    static var description = IntentDescription("Compresses the provided files using the Chisel engine.")
+    static let title: LocalizedStringResource = "Compress with Chisel"
+    static let description = IntentDescription("Compresses the provided files using the Chisel engine.")
 
     @Parameter(title: "Files", supportedTypeIdentifiers: ["public.item"])
     var files: [IntentFile]
@@ -66,9 +66,9 @@ struct CompressFilesIntent: AppIntent {
         }
 
         // 5. execute processing
-        let stream = await chisel.process(files: workingUrls)
         var outputFiles: [IntentFile] = []
 
+        let stream = await chisel.process(files: workingUrls)
         for await event in stream {
             switch event {
             case .finish(let path, let before, let after, _):
