@@ -314,7 +314,6 @@ struct FileRowView: View {
                 }
 
                 Spacer()
-
                 StatusBadgeView(status: item.status)
             }
         }
@@ -327,7 +326,7 @@ struct FileRowView: View {
         .preferredColorScheme(.light)
 }
 
-#Preview("Populated List - Light mode") {
+#Preview("Populated list - Light mode") {
     let mockViewModel = ChiselViewModel()
 
     var containerFile = FileItem(
@@ -395,7 +394,7 @@ struct FileRowView: View {
         .preferredColorScheme(.dark)
 }
 
-#Preview("Populated List - Dark mode") {
+#Preview("Populated list - Dark mode") {
     let mockViewModel = ChiselViewModel()
 
     var containerFile = FileItem(

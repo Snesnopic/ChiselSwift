@@ -80,3 +80,115 @@ extension UIDevice {
     }
 }
 #endif
+
+extension FileItem {
+    // generates heterogeneous dummy data covering all statuses and edge cases
+    static var mockData: [FileItem] {
+        [
+            // completed with significant savings
+            FileItem(
+                url: URL(fileURLWithPath: "/Users/dev/Pictures/architecture.jpg"),
+                tempURL: URL(fileURLWithPath: "/tmp/chisel/architecture.jpg"),
+                status: .completed(URL(fileURLWithPath: "/Users/dev/Pictures/architecture_compressed.jpg")),
+                size: 8_500_000,
+                sizeAfter: 2_100_000,
+                originalExtension: "jpg",
+                logs: [
+                    "STARTED PROCESSING architecture.jpg",
+                    "OPTIMIZING JPEG HUFFMAN TABLES",
+                    "COMPLETED: SAVED 6.4 MB"
+                ]
+            ),
+
+            // processing a large video
+            FileItem(
+                url: URL(fileURLWithPath: "/Users/dev/Movies/render_v2.mkv"),
+                tempURL: URL(fileURLWithPath: "/tmp/chisel/render_v2.mkv"),
+                status: .processing,
+                size: 4_200_000_000,
+                sizeAfter: nil,
+                originalExtension: "mkv",
+                logs: [
+                    "INITIALIZING DEMUXER",
+                    "EXTRACTING STREAMS",
+                    "ENCODING HEVC VIDEO STREAM (PASS 1)..."
+                ]
+            ),
+
+            // error state due to corruption
+            FileItem(
+                url: URL(fileURLWithPath: "/Users/dev/Downloads/dataset.zip"),
+                tempURL: URL(fileURLWithPath: "/tmp/chisel/dataset.zip"),
+                status: .error("CRC mismatch in central directory"),
+                size: 450_000_000,
+                sizeAfter: nil,
+                originalExtension: "zip",
+                logs: [
+                    "READING ZIP HEADERS",
+                    "ERROR: CRC MISMATCH DETECTED. FILE MAY BE CORRUPTED."
+                ]
+            ),
+
+            // compression yielded no gain
+            FileItem(
+                url: URL(fileURLWithPath: "/Users/dev/Music/lossless_track.flac"),
+                tempURL: URL(fileURLWithPath: "/tmp/chisel/lossless_track.flac"),
+                status: .noGain,
+                size: 42_000_000,
+                sizeAfter: 42_050_000,
+                originalExtension: "flac",
+                logs: [
+                    "ANALYZING AUDIO SPECTRUM",
+                    "ATTEMPTING RE-COMPRESSION",
+                    "OUTPUT LARGER THAN INPUT. ABORTING AND KEEPING ORIGINAL."
+                ]
+            ),
+
+            // stopped by user
+            FileItem(
+                url: URL(fileURLWithPath: "/Users/dev/Documents/thesis.pdf"),
+                tempURL: URL(fileURLWithPath: "/tmp/chisel/thesis.pdf"),
+                status: .stopped,
+                size: 15_000_000,
+                sizeAfter: nil,
+                originalExtension: "pdf",
+                logs: [
+                    "PARSING PDF OBJECTS",
+                    "DOWNSAMPLING IMAGES",
+                    "PROCESS INTERRUPTED BY USER."
+                ]
+            ),
+
+            // item with nested children (e.g., an uncompressed archive or directory)
+            FileItem(
+                url: URL(fileURLWithPath: "/Users/dev/Projects/engine_core"),
+                tempURL: URL(fileURLWithPath: "/tmp/chisel/engine_core"),
+                status: .pending,
+                size: 85_000,
+                sizeAfter: nil,
+                originalExtension: "",
+                children: [
+                    FileItem(
+                        url: URL(fileURLWithPath: "/Users/dev/Projects/engine_core/main.cpp"),
+                        tempURL: URL(fileURLWithPath: "/tmp/chisel/engine_core/main.cpp"),
+                        status: .pending,
+                        size: 25_000,
+                        sizeAfter: nil,
+                        originalExtension: "cpp"
+                    ),
+                    FileItem(
+                        url: URL(fileURLWithPath: "/Users/dev/Projects/engine_core/memory_pool.h"),
+                        tempURL: URL(fileURLWithPath: "/tmp/chisel/engine_core/memory_pool.h"),
+                        status: .pending,
+                        size: 60_000,
+                        sizeAfter: nil,
+                        originalExtension: "h"
+                    )
+                ],
+                logs: [
+                    "QUEUED DIRECTORY FOR BATCH COMPRESSION"
+                ]
+            )
+        ]
+    }
+}

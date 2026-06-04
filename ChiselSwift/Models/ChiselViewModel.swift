@@ -8,6 +8,9 @@ import SwiftUI
 @Observable
 @MainActor
 final class ChiselViewModel {
+    init(input: [FileItem] = []) {
+        items = input
+    }
     var items: [FileItem] = []
 
     // files that won't actually be processed because we know they are incompatible

@@ -11,3 +11,13 @@ struct InfoRow: View {
         }.font(.caption)
     }
 }
+
+#Preview ("Light mode") {
+    InfoRow(label: "Prova", value: "Prova 2")
+        .preferredColorScheme(.light)
+}
+
+#Preview ("Dark mode") {
+    InfoRow(label: "Prova", value: "Prova 2")
+        .preferredColorScheme(.dark)
+}

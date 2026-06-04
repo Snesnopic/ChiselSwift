@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9D0254232FD188D900AD8E9F /* Chisel in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD5A8CA2F96568800F54E92 /* Chisel */; };
 		9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D8650902F8C2D5200A03D31 /* libiconv.tbd */; };
-		9DABBA652FAA4EF500EEC2E8 /* Chisel in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD5A8CA2F96568800F54E92 /* Chisel */; };
 		9DDE60EC2F8CE4CA001CA9A1 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */; };
 		9DFE00212F92763800C4F91C /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 9DFE00202F92763800C4F91C /* .swiftlint.yml */; };
 /* End PBXBuildFile section */
@@ -16,9 +16,7 @@
 /* Begin PBXFileReference section */
 		9D86507C2F8C2CB700A03D31 /* Chisel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Chisel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D8650902F8C2D5200A03D31 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
-		9DD5A8FF2F9690AF00F54E92 /* stdlib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = stdlib.a; path = ../../.opam/4.14.0/lib/ocaml/stdlib.a; sourceTree = "<group>"; };
 		9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
-		9DF244FC2F96BDB600F08CA8 /* libcamlrun.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcamlrun.a; path = ../../.opam/4.14.0/lib/ocaml/libcamlrun.a; sourceTree = "<group>"; };
 		9DFE00202F92763800C4F91C /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -54,7 +52,7 @@
 		9D8650792F8C2CB700A03D31 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				9DABBA652FAA4EF500EEC2E8 /* Chisel in Frameworks */,
+				9D0254232FD188D900AD8E9F /* Chisel in Frameworks */,
 				9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */,
 			);
 		};
@@ -83,8 +81,6 @@
 		9D86508F2F8C2D5200A03D31 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				9DF244FC2F96BDB600F08CA8 /* libcamlrun.a */,
-				9DD5A8FF2F9690AF00F54E92 /* stdlib.a */,
 				9D8650902F8C2D5200A03D31 /* libiconv.tbd */,
 			);
 			name = Frameworks;

@@ -187,3 +187,17 @@ struct CompressionListView: View {
         .modelContainer(for: CompressionStat.self, inMemory: true)
         .preferredColorScheme(.dark)
 }
+
+#Preview("Populated list - Light") {
+    CompressionListView(viewModel: ChiselViewModel(input: FileItem.mockData), selectedFileID: .constant(UUID()))
+        .modelContainer(for: CompressionStat.self, inMemory: true)
+        .preferredColorScheme(.light)
+        .frame(width: 500, height: 400)
+}
+
+#Preview("Populated list - Dark") {
+    CompressionListView(viewModel: ChiselViewModel(input: FileItem.mockData), selectedFileID: .constant(UUID()))
+        .modelContainer(for: CompressionStat.self, inMemory: true)
+        .preferredColorScheme(.light)
+        .frame(width: 500, height: 400)
+}
