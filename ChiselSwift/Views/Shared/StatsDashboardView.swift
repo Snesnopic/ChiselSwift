@@ -203,6 +203,7 @@ struct FormatChartCard: View {
     }
 }
 
+// swiftlint:disable force_try
 #Preview("Light mode") {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: CompressionStat.self, configurations: config)

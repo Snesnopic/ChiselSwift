@@ -5,30 +5,45 @@ import ChiselKit
 import SwiftData
 import SwiftUI
 
+/// The primary view model responsible for managing the file queue and orchestrating the `ChiselKit` compression engine.
 @Observable
 @MainActor
 final class ChiselViewModel {
     init(input: [FileItem] = []) {
         items = input
     }
+    
+    /// The current list of files queued for processing.
     var items: [FileItem] = []
 
-    // files that won't actually be processed because we know they are incompatible
+    /// Files that are known to be unsupported and were explicitly skipped during import.
     var unsupportedURLs: [URL] = []
 
+    /// Application-wide processing logs, spanning all files.
     var logs: [String] = []
+    
+    /// Indicates whether the compression engine is currently active.
     var isProcessing = false
+    
+    /// Indicates whether a graceful shutdown of the engine has been requested.
     var isStopping = false
-    // check if there are files ready for compression
+    
+    /// Returns true if there is at least one pending file ready for processing.
     var canStartProcessing: Bool {
         !isProcessing && !items.isEmpty && items.contains { $0.status == .pending }
     }
 
+    private var currentChisel: Chisel?
+
     var libraryVersion: String = "Loading..."
+    var supportedExtensions: [String] = []
     func fetchVersion() {
         Task {
             let chisel = Chisel()
-            self.libraryVersion = await chisel.version
+            let version = await chisel.version
+            let extensions = await chisel.supportedExtensions
+            self.libraryVersion = version
+            self.supportedExtensions = extensions
         }
     }
 
@@ -200,6 +215,7 @@ final class ChiselViewModel {
         return files
     }
 
+    // swiftlint:disable cyclomatic_complexity function_parameter_count
     // coordinates the chiselkit engine
     func startProcessing(iterations: Int, iterationsLarge: Int, maxTokens: Int, threads: Int, hideUnsupported: Bool, outputMode: OutputMode, context: ModelContext) async {
         guard !items.isEmpty else { return }
@@ -213,6 +229,7 @@ final class ChiselViewModel {
         print("STARTING BATCH PROCESSING WITH \(iterations) ITERATIONS, \(maxTokens) TOKENS, \(threads) THREADS")
 
         let chisel = Chisel()
+        currentChisel = chisel
 
         await chisel.configure(
             iterations: UInt32(iterations),
@@ -405,11 +422,13 @@ final class ChiselViewModel {
         try? context.save()
 
         isProcessing = false
+        currentChisel = nil
         print("BATCH PROCESSING COMPLETED")
 #if os(macOS)
         MenuBarProgressManager.shared.hide()
 #endif
     }
+    // swiftlint:enable cyclomatic_complexity function_parameter_count
 
     func stopProcessing() {
         guard isProcessing, !isStopping else { return }
@@ -417,9 +436,8 @@ final class ChiselViewModel {
         isStopping = true
         print("USER REQUESTED STOP, WAITING FOR THREADS TO JOIN...")
 
-        let chisel = Chisel()
         Task {
-            await chisel.stop()
+            await currentChisel?.stop()
             // we DO NOT set isProcessing = false here. startProcessing will handle it.
         }
     }

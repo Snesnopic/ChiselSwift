@@ -10,7 +10,7 @@ struct AboutView: View {
         // lo spazio verticale crescerà parecchio
         let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let copyrightString = Bundle.main.infoDictionary?["NSHumanReadableCopyright"] as? String ?? "Copyright © 2026 Snesnopic"
-        let extensions = Chisel().supportedExtensions
+        let extensions = viewModel.supportedExtensions
         let groupedFormats: [FileCategory: [String]] = Dictionary(grouping: extensions) { ext in
             FileCategory.category(for: ext)
         }
