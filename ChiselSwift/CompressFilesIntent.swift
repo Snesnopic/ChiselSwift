@@ -3,10 +3,13 @@ import ChiselKit
 import SwiftData
 import Foundation
 
+/// An App Intent that exposes Chisel's compression capabilities to Apple Shortcuts and Siri.
+/// This allows users to compress files directly from the Finder context menu or automated workflows.
 struct CompressFilesIntent: AppIntent {
     static let title: LocalizedStringResource = "Compress with Chisel"
     static let description = IntentDescription("Compresses the provided files using the Chisel engine.")
 
+    /// The list of files provided by the user or the shortcut input.
     @Parameter(title: "Files", supportedTypeIdentifiers: ["public.item"])
     var files: [IntentFile]
 
@@ -56,11 +59,11 @@ struct CompressFilesIntent: AppIntent {
 
         for intentFile in files {
             guard let originalURL = intentFile.fileURL else { continue }
-            let destURL = tempDirectory.appendingPathComponent(originalURL.lastPathComponent)
+            // Use a unique UUID folder to prevent name collisions if multiple files have the same name
+            let uniqueFolder = tempDirectory.appendingPathComponent(UUID().uuidString)
+            try? FileManager.default.createDirectory(at: uniqueFolder, withIntermediateDirectories: true)
+            let destURL = uniqueFolder.appendingPathComponent(originalURL.lastPathComponent)
 
-            if FileManager.default.fileExists(atPath: destURL.path) {
-                try? FileManager.default.removeItem(at: destURL)
-            }
             try? FileManager.default.copyItem(at: originalURL, to: destURL)
             workingUrls.append(destURL)
         }
@@ -75,7 +78,7 @@ struct CompressFilesIntent: AppIntent {
                 let url = URL(fileURLWithPath: path)
 
                 // only export and track the root requested files, ignoring internal extracted files
-                if workingUrls.contains(where: { $0.lastPathComponent == url.lastPathComponent }) {
+                if workingUrls.contains(where: { $0.path == url.path }) {
                     outputFiles.append(IntentFile(fileURL: url))
 
                     let duration = Date().timeIntervalSince(startTime)
