@@ -139,7 +139,7 @@ final class ChiselViewModel {
                             unsupportedURLs.append(fileURL)
                             print("SKIPPED UNSUPPORTED FILE: \(fileURL.lastPathComponent)")
                         }
-                        continue // Saltiamo questo file e passiamo al prossimo
+                        continue
                     }
                     let destinationURL = tempDirectory.appendingPathComponent(fileURL.lastPathComponent)
 
