@@ -44,6 +44,7 @@ final class MenuBarProgressManager {
     func updateProgress(_ percentage: Double) {
         // updates the pie chart fill level
         indicator?.doubleValue = percentage * 100
+        indicator?.needsDisplay = true
     }
 
     func hide() {

@@ -29,20 +29,7 @@ struct FileItem: Identifiable, Equatable {
     }
 
     var typeIconName: String {
-            let ext = originalExtension.lowercased()
-
-            // fast path: direct extension to filetype matching
-            if let type = FileType(rawValue: ext) {
-                return fileTypeToCategory[type]?.iconName ?? "doc"
-            }
-
-            // fallback: system mime type resolution
-            if let mimeType = UTType(filenameExtension: ext)?.preferredMIMEType {
-                return mimeToCategory(mimeType).iconName
-            }
-
-            // absolute fallback
-            return "doc"
+            return FileCategory.category(for: originalExtension).iconName
         }
     var isPreviewAvailable: Bool {
             FileManager.default.fileExists(atPath: tempURL.path)
@@ -96,26 +83,23 @@ extension FileCategory {
             switch cleanExt {
 
             // MARK: - Images
-            case "jpg", "jpeg", "jpe", "png", "gif", "webp", "jxl", "tif", "tiff", "tga", "targa", "bmp", "dib", "ico", "cur", "icns", "gft", "pnm", "ppm", "pgm", "ora", "svg":
+            case "jpg", "jpeg", "jpe", "jif", "jfif", "jfi", "thm", "png", "apng", "gif", "webp", "jxl", "tif", "tiff", "tga", "targa", "icb", "vda", "vst", "bmp", "dib", "ico", "cur", "icns", "gft", "pnm", "ppm", "pgm", "jp2", "j2k", "j2c", "mng", "jng", "pcx", "dcx", "pcc", "ora", "svg":
                 return .image
 
             // MARK: - Audio
-            case "mp3", "m4a", "m4b", "wav", "flac", "ogg", "oga", "opus", "aif", "aiff", "aifc", "ape", "wv", "wvc", "wvp", "dsf", "dff", "mpc", "mp+", "mpp", "tta", "wma":
+            case "mp3", "m4a", "m4b", "wav", "flac", "ogg", "oga", "opus", "aif", "aiff", "aifc", "ape", "wv", "wvc", "wvp", "dsf", "dff", "mpc", "mp+", "tta":
                 return .audio
 
             // MARK: - Video
-            // N.B: mp4, mkv e webm li ho messi in Video per differenziarli dall'audio puro,
-            // anche se nei container Matroska/MP4 c'è l'audio. È la UX più intuitiva.
-            case "mp4", "mkv", "webm", "wmv", "asf", "swf":
+            case "mp4", "m4v", "mov", "qt", "3gp", "3g2", "mkv", "mka", "webm", "wma", "wmv", "asf", "swf":
                 return .video
 
             // MARK: - Documents
-            // Includiamo Office, Ebook, XML data, Fumetti (cbt/cbz) e installer (msi) come da tuo README
-            case "pdf", "xml", "xhtml", "kml", "gpx", "dae", "rss", "atom", "xmp", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "msi", "odt", "ods", "odp", "odg", "odf", "epub", "fb2", "cbz", "cbt", "xps", "oxps", "dwfx", "3mf", "kmz":
+            case "pdf", "xml", "xhtml", "kml", "gpx", "dae", "rss", "atom", "xmp", "xsl", "xslt", "json", "docx", "docm", "dotm", "dotx", "xlsx", "xlsm", "xltm", "xltx", "pptx", "pptm", "potm", "potx", "ppsm", "ppsx", "doc", "xls", "ppt", "msi", "msp", "mst", "pub", "vsd", "vss", "adp", "mdb", "mdt", "mpd", "mpp", "mpt", "rvt", "sldasm", "slddrw", "sldprt", "snt", "spl", "dot", "xlt", "pps", "chm", "fla", "one", "ost", "rfa", "rte", "wps", "odt", "ods", "odp", "odg", "odf", "odb", "epub", "fb2", "cbz", "cbt", "vcf", "xps", "oxps", "exe", "dll", "ocx", "scr", "cpl", "sys", "drv", "bpl", "icl", "rll", "vbx", "dwfx", "3mf", "kmz", "xlam":
                 return .document
 
             // MARK: - Archives
-            case "zip", "tar", "gz", "bz2", "xz", "lzma", "iso", "cpio", "a", "ar", "lib", "br", "zst", "tzst", "jar", "xpi", "apk", "vsix", "nupkg", "war", "ear", "aab", "rdb":
+            case "zip", "air", "bsz", "cdr", "csl", "gallery", "gallerycollection", "galleryitem", "grs", "ita", "itz", "nbk", "notebook", "oex", "osk", "pk3", "puz", "stz", "vlt", "wal", "wba", "wmz", "wsz", "xap", "xl", "xmz", "xsn", "appx", "bar", "dwf", "easm", "rmskin", "sldx", "zipx", "tar", "gz", "tgz", "deb", "ipk", "svgz", "bz2", "xz", "lzma", "iso", "cpio", "a", "ar", "lib", "br", "zst", "tzst", "jar", "xpi", "apk", "ipa", "ipsw", "vsix", "nupkg", "war", "ear", "aab", "rdb", "knz":
                 return .archive
 
             // MARK: - Fonts
@@ -127,7 +111,7 @@ extension FileCategory {
                 return .scientific
 
             // MARK: - Databases
-            case "sqlite", "sqlite3", "db":
+            case "sqlite", "sqlite3", "db", "thumbs.db":
                 return .database
 
             default:

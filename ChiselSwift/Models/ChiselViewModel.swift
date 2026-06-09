@@ -111,39 +111,37 @@ final class ChiselViewModel {
         print("IMPORTING \(urls.count) ROOT ITEMS (RECURSIVE: \(recursive))")
         let tempDirectory = FileManager.default.temporaryDirectory
 
-        for rootURL in urls {
-            // start accessing the root folder/file provided by the system
-            guard rootURL.startAccessingSecurityScopedResource() else {
-                print("FAILED TO ACCESS SECURITY SCOPED RESOURCE: \(rootURL.lastPathComponent)")
-                continue
-            }
-            activeSecurityBookmarks.insert(rootURL)
-
-            var filesToProcess: [URL] = []
-            var isDir: ObjCBool = false
-
-            if FileManager.default.fileExists(atPath: rootURL.path, isDirectory: &isDir), isDir.boolValue {
-                // it's a directory, extract children
-                filesToProcess = expandDirectory(at: rootURL, recursive: recursive)
-            } else {
-                // it's a single file
-                filesToProcess.append(rootURL)
-            }
-            let chisel = Chisel()
-            // copy children while the parent's security scope is still active
-            for fileURL in filesToProcess {
-                var bool: Bool = true
-                Task {
-                    bool = await chisel.isCompatible(file: fileURL)
+        Task {
+            for rootURL in urls {
+                // start accessing the root folder/file provided by the system
+                guard rootURL.startAccessingSecurityScopedResource() else {
+                    print("FAILED TO ACCESS SECURITY SCOPED RESOURCE: \(rootURL.lastPathComponent)")
+                    continue
                 }
-                guard bool else {
-                    if !unsupportedURLs.contains(fileURL) {
-                        unsupportedURLs.append(fileURL)
-                        print("SKIPPED UNSUPPORTED FILE: \(fileURL.lastPathComponent)")
+                activeSecurityBookmarks.insert(rootURL)
+
+                var filesToProcess: [URL] = []
+                var isDir: ObjCBool = false
+
+                if FileManager.default.fileExists(atPath: rootURL.path, isDirectory: &isDir), isDir.boolValue {
+                    // it's a directory, extract children
+                    filesToProcess = expandDirectory(at: rootURL, recursive: recursive)
+                } else {
+                    // it's a single file
+                    filesToProcess.append(rootURL)
+                }
+                let chisel = Chisel()
+                // copy children while the parent's security scope is still active
+                for fileURL in filesToProcess {
+                    let bool = await chisel.isCompatible(file: fileURL)
+                    guard bool else {
+                        if !unsupportedURLs.contains(fileURL) {
+                            unsupportedURLs.append(fileURL)
+                            print("SKIPPED UNSUPPORTED FILE: \(fileURL.lastPathComponent)")
+                        }
+                        continue // Saltiamo questo file e passiamo al prossimo
                     }
-                    continue // Saltiamo questo file e passiamo al prossimo
-                }
-                let destinationURL = tempDirectory.appendingPathComponent(fileURL.lastPathComponent)
+                    let destinationURL = tempDirectory.appendingPathComponent(fileURL.lastPathComponent)
 
                 do {
                     if FileManager.default.fileExists(atPath: destinationURL.path) {
@@ -172,6 +170,8 @@ final class ChiselViewModel {
                 }
             }
         }
+        }
+
     }
 
     private func expandDirectory(at url: URL, recursive: Bool) -> [URL] {
@@ -330,17 +330,7 @@ final class ChiselViewModel {
                         parent.logs.append("[CHILD] \(finalMsg)")
                         logs.append("[CHILD] \(finalMsg)")
                     }
-#if os(macOS)
-                    // calculate overall percentage based on a snapshot to avoid exclusivity violations
-                    let snapshot = self.items
-                    let completed = snapshot.filter { if case .completed = $0.status { return true }; return false }.count
-                    let total = snapshot.count
-                    let percentage = total > 0 ? Double(completed) / Double(total) : 0
-                    MenuBarProgressManager.shared.updateProgress(percentage)
-
-#endif
                 }
-
             case .error(let path, let message):
                 updateItem(for: path, createIfNeeded: true) { parent, child, isRoot in
                     let targetName = URL(fileURLWithPath: path).lastPathComponent
@@ -416,6 +406,9 @@ final class ChiselViewModel {
 
         isProcessing = false
         print("BATCH PROCESSING COMPLETED")
+#if os(macOS)
+        MenuBarProgressManager.shared.hide()
+#endif
     }
 
     func stopProcessing() {
@@ -607,6 +600,22 @@ final class ChiselViewModel {
                 applyAction(nodes: &localNodes, indices: ArraySlice(relativeIndices))
 
                 items[rootIndex] = localNodes[0]
+                updateMenuBarProgress()
+    }
+
+    private func updateMenuBarProgress() {
+#if os(macOS)
+        let snapshot = self.items
+        let completed = snapshot.filter {
+            switch $0.status {
+            case .completed, .noGain, .error, .skipped: return true
+            default: return false
+            }
+        }.count
+        let total = snapshot.count
+        let percentage = total > 0 ? Double(completed) / Double(total) : 0
+        MenuBarProgressManager.shared.updateProgress(percentage)
+#endif
     }
 
     private func generateUniqueURL(for url: URL) -> URL {
