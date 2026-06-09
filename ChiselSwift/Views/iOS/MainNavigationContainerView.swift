@@ -44,7 +44,7 @@ struct MainNavigationContainerView: View {
     )
     child1.sizeAfter = 1_150_000
 
-    var child2 = FileItem(
+    let child2 = FileItem(
         url: URL(fileURLWithPath: "/tmp/extracted/font_logo.ttf"),
         tempURL: URL(fileURLWithPath: "/tmp/extracted/font_logo.ttf"),
         status: .noGain,
@@ -52,7 +52,7 @@ struct MainNavigationContainerView: View {
         originalExtension: "ttf"
     )
 
-    var child3 = FileItem(
+    let child3 = FileItem(
         url: URL(fileURLWithPath: "/tmp/extracted/image_2.png"),
         tempURL: URL(fileURLWithPath: "/tmp/extracted/image_2.png"),
         status: .processing,
@@ -78,7 +78,7 @@ struct MainNavigationContainerView: View {
         originalExtension: "mp4"
     )
 
-    mockViewModel.items = [containerFile, pendingFile]
+    mockViewModel.items = [containerFile, pendingFile, errorFile]
     mockViewModel.unsupportedURLs = [URL(fileURLWithPath: "/Users/mario/Desktop/video_presentazione.mp4")]
     return MainNavigationContainerView(viewModel: mockViewModel)
         .modelContainer(for: CompressionStat.self, inMemory: true)
