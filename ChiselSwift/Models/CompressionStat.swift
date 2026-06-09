@@ -6,19 +6,19 @@ import SwiftData
 final class CompressionStat {
     /// Unique identifier for the record.
     var id: UUID
-    
+
     /// The date and time when the compression was completed.
     var timestamp: Date
-    
+
     /// The original file extension in lowercase.
     var fileExtension: String
-    
+
     /// Original file size in bytes before compression.
     var originalSize: Int64
-    
+
     /// Final file size in bytes after successful compression.
     var compressedSize: Int64
-    
+
     /// The time taken to process the file, in seconds.
     var durationSeconds: Double
 
@@ -32,7 +32,7 @@ final class CompressionStat {
     }
 
     // calculated properties not persisted in the database
-    
+
     /// Total bytes saved by the compression.
     @Transient var savedBytes: Int64 {
         originalSize - compressedSize

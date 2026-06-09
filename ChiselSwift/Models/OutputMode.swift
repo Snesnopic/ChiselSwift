@@ -4,13 +4,13 @@ import Foundation
 enum OutputMode: String, CaseIterable, Identifiable {
     /// The original file is overwritten by the compressed version.
     case overwrite
-    
+
     /// The compressed file is saved next to the original, with a suffix (e.g. -compressed).
     case sideBySide
-    
+
     /// The original file is renamed to a backup (e.g. -original), and the compressed file takes its place.
     case keepOriginal
-    
+
     /// The compressed file is placed into a user-specified custom directory.
     case outputFolder
 

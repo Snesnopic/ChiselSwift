@@ -12,7 +12,7 @@ final class ChiselViewModel {
     init(input: [FileItem] = []) {
         items = input
     }
-    
+
     /// The current list of files queued for processing.
     var items: [FileItem] = []
 
@@ -21,16 +21,20 @@ final class ChiselViewModel {
 
     /// Application-wide processing logs, spanning all files.
     var logs: [String] = []
-    
+
     /// Indicates whether the compression engine is currently active.
     var isProcessing = false
-    
+
     /// Indicates whether a graceful shutdown of the engine has been requested.
     var isStopping = false
-    
+
+    /// Indicates whether files are currently being copied and imported into the queue.
+    var isImporting: Bool { importTaskCount > 0 }
+    private var importTaskCount: Int = 0
+
     /// Returns true if there is at least one pending file ready for processing.
     var canStartProcessing: Bool {
-        !isProcessing && !items.isEmpty && items.contains { $0.status == .pending }
+        !isProcessing && !isImporting && !items.isEmpty && items.contains { $0.status == .pending }
     }
 
     private var currentChisel: Chisel?
@@ -125,8 +129,10 @@ final class ChiselViewModel {
     func addFiles(urls: [URL], recursive: Bool) {
         print("IMPORTING \(urls.count) ROOT ITEMS (RECURSIVE: \(recursive))")
         let tempDirectory = FileManager.default.temporaryDirectory
+        importTaskCount += 1
 
         Task {
+            defer { importTaskCount -= 1 }
             for rootURL in urls {
                 // start accessing the root folder/file provided by the system
                 guard rootURL.startAccessingSecurityScopedResource() else {

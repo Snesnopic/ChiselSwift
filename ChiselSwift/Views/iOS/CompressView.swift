@@ -167,6 +167,10 @@ struct CompressView: View {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                 Text("Stopping threads...")
+                            } else if viewModel.isImporting {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                Text("Importing files...")
                             } else if viewModel.isProcessing {
                                 Image(systemName: "stop.fill")
                                 Text("Stop processing")
@@ -180,8 +184,9 @@ struct CompressView: View {
                         .padding()
                         .background(
                             viewModel.isStopping ? Color.orange :
-                                (viewModel.isProcessing ? Color.red :
-                                    (!viewModel.canStartProcessing ? Color.gray : Color.accentColor)))
+                                (viewModel.isImporting ? Color.accentColor.opacity(0.6) :
+                                    (viewModel.isProcessing ? Color.red :
+                                        (!viewModel.canStartProcessing ? Color.gray : Color.accentColor))))
                         .foregroundColor(.white)
                         .cornerRadius(12)
                         .padding()

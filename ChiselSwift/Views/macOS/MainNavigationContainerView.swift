@@ -118,6 +118,9 @@ struct MainNavigationContainerView: View {
                                     if viewModel.isStopping {
                                         ProgressView()
                                             .controlSize(.small)
+                                    } else if viewModel.isImporting {
+                                        ProgressView()
+                                            .controlSize(.small)
                                     } else if viewModel.isProcessing {
                                         Label("Stop", systemImage: "stop.fill")
                                     } else {

@@ -5,28 +5,28 @@ import UniformTypeIdentifiers
 /// This structure tracks the file's state, size, and nested children if it's a container.
 struct FileItem: Identifiable, Equatable {
     let id = UUID()
-    
+
     /// The original location of the file.
     var url: URL
-    
+
     /// The temporary working copy used during compression.
     var tempURL: URL
-    
+
     /// Current processing status.
     var status: ProcessingStatus
-    
+
     /// Original file size in bytes.
     var size: Int64
-    
+
     /// Compressed file size in bytes, if applicable.
     var sizeAfter: Int64?
-    
+
     /// The file extension in lowercase.
     var originalExtension: String
-    
+
     /// Nested files if the current file is a container format.
     var children: [FileItem]?
-    
+
     /// Processing logs associated with this file.
     var logs: [String] = []
 
@@ -51,7 +51,7 @@ struct FileItem: Identifiable, Equatable {
     var typeIconName: String {
             return FileCategory.category(for: originalExtension).iconName
         }
-        
+
     /// Checks if the temporary working copy is available for preview.
     var isPreviewAvailable: Bool {
             FileManager.default.fileExists(atPath: tempURL.path)
