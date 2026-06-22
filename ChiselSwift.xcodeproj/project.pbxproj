@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9D0254232FD188D900AD8E9F /* Chisel in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD5A8CA2F96568800F54E92 /* Chisel */; };
+		9D043DCF2FE480E00008288D /* Chisel in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD5A9142F96A2AD00F54E92 /* Chisel */; };
 		9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D8650902F8C2D5200A03D31 /* libiconv.tbd */; };
 		9DDE60EC2F8CE4CA001CA9A1 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */; };
 		9DFE00212F92763800C4F91C /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 9DFE00202F92763800C4F91C /* .swiftlint.yml */; };
@@ -52,7 +52,7 @@
 		9D8650792F8C2CB700A03D31 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				9D0254232FD188D900AD8E9F /* Chisel in Frameworks */,
+				9D043DCF2FE480E00008288D /* Chisel in Frameworks */,
 				9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */,
 			);
 		};
@@ -322,7 +322,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -373,7 +373,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;

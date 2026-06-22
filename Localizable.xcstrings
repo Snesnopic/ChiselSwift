@@ -1,26 +1,26 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "%lld": {
-      "comment": "Number of iterations of the zopfli algorithm displayed in the UI.",
-      "shouldTranslate": false
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%lld" : {
+      "comment" : "Number of iterations of the zopfli algorithm displayed in the UI.",
+      "shouldTranslate" : false
     },
-    "%lld files inside": {
-      "comment": "Subtitle indicating the total number of files contained within a directory.",
-      "localizations": {
-        "en": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld file inside"
+    "%lld files inside" : {
+      "comment" : "Subtitle indicating the total number of files contained within a directory.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld file inside"
                 }
               },
-              "other": {
-                "stringUnit": {
-                  "state": "new",
-                  "value": "%lld files inside"
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "%lld files inside"
                 }
               }
             }
@@ -28,326 +28,335 @@
         }
       }
     },
-    "%lld unsupported files skipped": {
-      "comment": "Message summarizing how many unsupported files were automatically skipped."
+    "%lld unsupported files skipped" : {
+      "comment" : "Message summarizing how many unsupported files were automatically skipped."
     },
-    "•": {
-      "comment": "A bullet point character used as a visual separator in the UI."
+    "•" : {
+      "comment" : "A bullet point character used as a visual separator in the UI."
     },
-    "About": {
-      "comment": "Navigation title for the 'About' section containing app information."
+    "About" : {
+      "comment" : "Navigation title for the 'About' section containing app information."
     },
-    "About Chisel": {
-      "comment": "Button text to open the native macOS 'About' window."
+    "About Chisel" : {
+      "comment" : "Button text to open the native macOS 'About' window."
     },
-    "Active threads": {
-      "comment": "Settings label for configuring the number of concurrent processing threads."
+    "Active threads" : {
+      "comment" : "Settings label for configuring the number of concurrent processing threads."
     },
-    "Add Files": {
-      "comment": "Button label to open the file picker dialog."
+    "Add Files" : {
+      "comment" : "Button label to open the file picker dialog."
     },
-    "Alongside original (a-compressed.pdf)": {
-      "comment": "Output mode option to save the compressed file in the same directory, appending '-compressed' to the filename."
+    "Alongside original (a-compressed.pdf)" : {
+      "comment" : "Output mode option to save the compressed file in the same directory, appending '-compressed' to the filename."
     },
-    "Amount of iterations of the zopfli algorithm on deflate files (pngs, pdfs, archives).": {
-      "comment": "Description text for the Zopfli iterations slider."
+    "Amount of iterations of the zopfli algorithm on deflate files (pngs, pdfs, archives)." : {
+      "comment" : "Description text for the Zopfli iterations slider."
     },
-    "Amount of tokens used for flexigif compression.": {
-      "comment": "Description text for the Flexigif tokens slider."
+    "Amount of tokens used for flexigif compression." : {
+      "comment" : "Description text for the Flexigif tokens slider."
     },
-    "App icon by ": {
-      "comment": "Prefix text for attributing the app icon designer."
+    "App icon by " : {
+      "comment" : "Prefix text for attributing the app icon designer."
     },
-    "Archive": {
-      "comment": "Category name for archive file formats (e.g., zip, tar)."
+    "Archive" : {
+      "comment" : "Category name for archive file formats (e.g., zip, tar)."
     },
-    "Audio": {
-      "comment": "Category name for audio file formats (e.g., mp3, wav)."
+    "Audio" : {
+      "comment" : "Category name for audio file formats (e.g., mp3, wav)."
     },
-    "Automate with Shortcuts": {
-      "comment": "Title for the section explaining Apple Shortcuts integration."
+    "Automate with Shortcuts" : {
+      "comment" : "Title for the section explaining Apple Shortcuts integration."
     },
-    "Cancel": {
-      "comment": "Standard button label to cancel the current operation."
+    "Cancel" : {
+      "comment" : "Standard button label to cancel the current operation."
     },
-    "Chisel": {
-      "comment": "The application name. Do not translate.",
-      "shouldTranslate": false
+    "Chisel" : {
+      "comment" : "The application name. Do not translate.",
+      "shouldTranslate" : false
     },
-    "Chisel %@": {
-      "comment": "Footnote displaying the version of the underlying libchisel C++ engine.",
-      "shouldTranslate": false
+    "Chisel %@" : {
+      "comment" : "Footnote displaying the version of the underlying libchisel C++ engine.",
+      "shouldTranslate" : false
     },
-    "Chisel engine": {
-      "comment": "Link text pointing to the Chisel C++ engine repository."
+    "Chisel engine" : {
+      "comment" : "Link text pointing to the Chisel C++ engine repository."
     },
-    "Chisel GUI": {
-      "comment": "Link text pointing to the ChiselSwift macOS repository."
+    "Chisel GUI" : {
+      "comment" : "Link text pointing to the ChiselSwift macOS repository."
     },
-    "Chisel provides App Intents to compress your files silently in the background or right from the Finder context menu.": {
-      "comment": "Description of the Apple Shortcuts and Finder integration capabilities."
+    "Chisel provides App Intents to compress your files silently in the background or right from the Finder context menu." : {
+      "comment" : "Description of the Apple Shortcuts and Finder integration capabilities."
     },
-    "Clear": {
-      "comment": "Button label to clear a single item or a selection."
+    "Clear" : {
+      "comment" : "Button label to clear a single item or a selection."
     },
-    "Clear all": {
-      "comment": "Button label to remove all files from the processing list."
+    "Clear all" : {
+      "comment" : "Button label to remove all files from the processing list."
     },
-    "Come back when you'll have compressed some files!": {
-      "comment": "Empty state text in the statistics view when no data is available."
+    "Come back when you'll have compressed some files!" : {
+      "comment" : "Empty state text in the statistics view when no data is available."
     },
-    "Compress": {
-      "comment": "Navigation label for the main compression tab."
+    "Compress" : {
+      "comment" : "Navigation label for the main compression tab."
     },
-    "Compress ${files}": {
-      "comment": "Siri Shortcut parameter description for compressing specific files."
+    "Compress ${files}" : {
+      "comment" : "Siri Shortcut parameter description for compressing specific files."
     },
-    "Compress files": {
-      "comment": "Title for the file compression Siri Shortcut."
+    "Compress files" : {
+      "comment" : "Title for the file compression Siri Shortcut."
     },
-    "Compress with Chisel": {
-      "comment": "Title of the Quick Action available in the Finder context menu."
+    "Compress with Chisel" : {
+      "comment" : "Title of the Quick Action available in the Finder context menu."
     },
-    "Compresses the provided files using the Chisel engine.": {
-      "comment": "Detailed description of the Siri Shortcut action."
+    "Compresses the provided files using the Chisel engine." : {
+      "comment" : "Detailed description of the Siri Shortcut action."
     },
-    "Copyright © 2026 Snesnopic": {
-      "comment": "Copyright notice in the About screen."
+    "Copyright © 2026 Snesnopic" : {
+      "comment" : "Copyright notice in the About screen."
     },
-    "Custom output folder": {
-      "comment": "Output mode option allowing the user to select a specific directory for compressed files."
+    "Custom output folder" : {
+      "comment" : "Output mode option allowing the user to select a specific directory for compressed files."
     },
-    "Database": {
-      "comment": "Category name for database file formats."
+    "Database" : {
+      "comment" : "Category name for database file formats."
     },
-    "Delete": {
-      "comment": "Context menu action to delete a file from the list."
+    "Delete" : {
+      "comment" : "Context menu action to delete a file from the list."
     },
-    "Destination:": {
-      "comment": "Label prompting the user to select an output directory."
+    "Destination:" : {
+      "comment" : "Label prompting the user to select an output directory."
     },
-    "Document": {
-      "comment": "Category name for document file formats (e.g., pdf, docx)."
+    "Document" : {
+      "comment" : "Category name for document file formats (e.g., pdf, docx)."
     },
-    "Documents": {
-      "comment": "Plural category name for document file formats."
+    "Documents" : {
+      "comment" : "Plural category name for document file formats."
     },
-    "Drag and drop files here, or use the add button to start compressing.": {
-      "comment": "Empty state instruction in the main file list."
+    "Drag and drop files here, or use the add button to start compressing." : {
+      "comment" : "Empty state instruction in the main file list."
     },
-    "Expand for fine-tuning some compression related parameters. Incorrectly set values severely degrade performance.": {
-      "comment": "Header description for the advanced settings section."
+    "Expand for fine-tuning some compression related parameters. Incorrectly set values severely degrade performance." : {
+      "comment" : "Header description for the advanced settings section."
     },
-    "Export current logs to .txt": {
-      "comment": "Tooltip or detailed description for the log export button."
+    "Export current logs to .txt" : {
+      "comment" : "Tooltip or detailed description for the log export button."
     },
-    "Export logs": {
-      "comment": "Menu item or button label to export logs to a file."
+    "Export logs" : {
+      "comment" : "Menu item or button label to export logs to a file."
     },
-    "Export Logs": {
-      "comment": "Button label to trigger the log export process."
+    "Export Logs" : {
+      "comment" : "Button label to trigger the log export process."
     },
-    "Files": {
-      "comment": "Sidebar or section title for the file queue."
+    "Files" : {
+      "comment" : "Sidebar or section title for the file queue."
     },
-    "Flexigif": {
-      "comment": "Label for the Flexigif compression settings."
+    "Flexigif" : {
+      "comment" : "Label for the Flexigif compression settings."
     },
-    "Font": {
-      "comment": "Category name for font file formats (e.g., ttf, otf)."
+    "Font" : {
+      "comment" : "Category name for font file formats (e.g., ttf, otf)."
     },
-    "format": {
-      "comment": "Label for the 'format' axis in the statistics chart."
+    "format" : {
+      "comment" : "Label for the 'format' axis in the statistics chart."
     },
-    "Format": {
-      "comment": "Column header or label denoting the file type format."
+    "Format" : {
+      "comment" : "Column header or label denoting the file type format."
     },
-    "General options": {
-      "comment": "Section header for general application settings."
+    "General options" : {
+      "comment" : "Section header for general application settings."
     },
-    "Global logs": {
-      "comment": "Header for the view displaying aggregated logs from all files."
+    "Global logs" : {
+      "comment" : "Header for the view displaying aggregated logs from all files."
     },
-    "Hide unsupported subfiles": {
-      "comment": "Settings toggle to hide internal subfiles that cannot be compressed."
+    "Hide unsupported subfiles" : {
+      "comment" : "Settings toggle to hide internal subfiles that cannot be compressed."
     },
-    "How many files to process in parallel. More threads will use more CPU but can also make the system unresponsive until all files are processed.": {
-      "comment": "Detailed explanation of the 'Active threads' setting."
+    "How many files to process in parallel. More threads will use more CPU but can also make the system unresponsive until all files are processed." : {
+      "comment" : "Detailed explanation of the 'Active threads' setting."
     },
-    "Image": {
-      "comment": "Category name for image file formats (e.g., png, jpg)."
+    "Image" : {
+      "comment" : "Category name for image file formats (e.g., png, jpg)."
     },
-    "Inspector": {
-      "comment": "Button to toggle the side inspector panel showing file details."
+    "Importing files..." : {
+
     },
-    "Iterations": {
-      "comment": "Label for the Zopfli iterations setting."
+    "Inspector" : {
+      "comment" : "Button to toggle the side inspector panel showing file details."
     },
-    "Iterations on large files": {
-      "comment": "Label for the Zopfli iterations setting specifically applied to large files."
+    "Iterations" : {
+      "comment" : "Label for the Zopfli iterations setting."
     },
-    "Keeps EXIF, XMP, color profiles, and timestamps. Disabling this yields slightly better compression but strips most non-essential data.": {
-      "comment": "Detailed explanation of the 'Preserve metadata' setting."
+    "Iterations on large files" : {
+      "comment" : "Label for the Zopfli iterations setting specifically applied to large files."
     },
-    "Mahary Esposito": {
-      "comment": "Name of the app icon designer. Do not translate."
+    "Keeps EXIF, XMP, color profiles, and timestamps. Disabling this yields slightly better compression but strips most non-essential data." : {
+      "comment" : "Detailed explanation of the 'Preserve metadata' setting."
     },
-    "Many container files, such as PDFs, contain a lot of internal files that can't be processed. This option hides these files.": {
-      "comment": "Detailed explanation of the 'Hide unsupported subfiles' setting."
+    "Mahary Esposito" : {
+      "comment" : "Name of the app icon designer. Do not translate."
     },
-    "Maximum dictionary tokens": {
-      "comment": "Label for the maximum dictionary tokens setting in Flexigif."
+    "Many container files, such as PDFs, contain a lot of internal files that can't be processed. This option hides these files." : {
+      "comment" : "Detailed explanation of the 'Hide unsupported subfiles' setting."
     },
-    "No files selected": {
-      "comment": "Empty state message when no files are selected in the list."
+    "Maximum dictionary tokens" : {
+      "comment" : "Label for the maximum dictionary tokens setting in Flexigif."
     },
-    "No log data available": {
-      "comment": "Message shown when a specific file has no processing logs."
+    "No files selected" : {
+      "comment" : "Empty state message when no files are selected in the list."
     },
-    "No logs generated yet": {
-      "comment": "Message shown when the global log console is empty."
+    "No log data available" : {
+      "comment" : "Message shown when a specific file has no processing logs."
     },
-    "No selection": {
-      "comment": "Inspector title when nothing is selected."
+    "No logs generated yet" : {
+      "comment" : "Message shown when the global log console is empty."
     },
-    "No statistics yet": {
-      "comment": "Header in the statistics view when no files have been compressed."
+    "No selection" : {
+      "comment" : "Inspector title when nothing is selected."
     },
-    "On My iPhone": {
-      "comment": "Location identifier for local iOS storage."
+    "No statistics yet" : {
+      "comment" : "Header in the statistics view when no files have been compressed."
     },
-    "Output mode": {
-      "comment": "Settings label for choosing where compressed files are saved."
+    "On My iPhone" : {
+      "comment" : "Location identifier for local iOS storage."
     },
-    "Overwrite": {
-      "comment": "Output mode option that replaces the original file with the compressed one."
+    "Output mode" : {
+      "comment" : "Settings label for choosing where compressed files are saved."
     },
-    "Perform an extra check after each compression to ensure the content of the modified file perfectly matches the original file. Guarantees that your files don't degrade in quality, but makes processing slower.": {
-      "comment": "Detailed explanation of the 'Verify data integrity' setting."
+    "Overwrite" : {
+      "comment" : "Output mode option that replaces the original file with the compressed one."
     },
-    "Permission required": {
-      "comment": "Alert title requesting filesystem access permissions."
+    "Perform an extra check after each compression to ensure the content of the modified file perfectly matches the original file. Guarantees that your files don't degrade in quality, but makes processing slower." : {
+      "comment" : "Detailed explanation of the 'Verify data integrity' setting."
     },
-    "Please select a default output folder for your compressed files.": {
-      "comment": "Prompt asking the user to pick a custom output directory."
+    "Permission required" : {
+      "comment" : "Alert title requesting filesystem access permissions."
     },
-    "Preserve file metadata": {
-      "comment": "Settings toggle to keep metadata like EXIF and timestamps."
+    "Please select a default output folder for your compressed files." : {
+      "comment" : "Prompt asking the user to pick a custom output directory."
     },
-    "Preview unavailable": {
-      "comment": "Placeholder text when a visual preview of a file cannot be generated."
+    "Preserve file metadata" : {
+      "comment" : "Settings toggle to keep metadata like EXIF and timestamps."
     },
-    "Process log": {
-      "comment": "Header for the log output of a specific file."
+    "Preview unavailable" : {
+      "comment" : "Placeholder text when a visual preview of a file cannot be generated."
     },
-    "Recursive folder import": {
-      "comment": "Settings toggle to allow importing files from nested subdirectories."
+    "Process log" : {
+      "comment" : "Header for the log output of a specific file."
     },
-    "Rename original (a-original.pdf)": {
-      "comment": "Output mode option to keep both files, renaming the original file."
+    "Recursive folder import" : {
+      "comment" : "Settings toggle to allow importing files from nested subdirectories."
     },
-    "Reset advanced parameters to defaults": {
-      "comment": "Button label to restore default advanced settings."
+    "Rename original (a-original.pdf)" : {
+      "comment" : "Output mode option to keep both files, renaming the original file."
     },
-    "Reveal in Finder": {
-      "comment": "Context menu action to open the file's location in macOS Finder."
+    "Reset advanced parameters to defaults" : {
+      "comment" : "Button label to restore default advanced settings."
     },
-    "saved": {
-      "comment": "Label indicating the amount of storage space saved."
+    "Reveal in Finder" : {
+      "comment" : "Context menu action to open the file's location in macOS Finder."
     },
-    "Saved: %@": {
-      "comment": "Formatted string showing the total bytes saved (e.g., 'Saved: 15 MB')."
+    "saved" : {
+      "comment" : "Label indicating the amount of storage space saved."
     },
-    "Savings by format": {
-      "comment": "Chart title displaying compression savings broken down by file type."
+    "Saved: %@" : {
+      "comment" : "Formatted string showing the total bytes saved (e.g., 'Saved: 15 MB')."
     },
-    "Scientific": {
-      "comment": "Category name for scientific file formats."
+    "Savings by format" : {
+      "comment" : "Chart title displaying compression savings broken down by file type."
     },
-    "Select a section from the sidebar": {
-      "comment": "Empty state message for the split view detail pane."
+    "Scientific" : {
+      "comment" : "Category name for scientific file formats."
     },
-    "Select folder": {
-      "comment": "Button label to pick a directory."
+    "Select a section from the sidebar" : {
+      "comment" : "Empty state message for the split view detail pane."
     },
-    "Settings": {
-      "comment": "Navigation label for the app preferences."
+    "Select folder" : {
+      "comment" : "Button label to pick a directory."
     },
-    "Show advanced compression parameters": {
-      "comment": "Toggle label to reveal advanced settings."
+    "Settings" : {
+      "comment" : "Navigation label for the app preferences."
     },
-    "Start": {
-      "comment": "Button label to begin the compression process."
+    "Settings are locked while processing. Any changes will be applied to the next batch." : {
+
     },
-    "Start processing": {
-      "comment": "Button label to start compressing the queued files."
+    "Show advanced compression parameters" : {
+      "comment" : "Toggle label to reveal advanced settings."
     },
-    "Statistics": {
-      "comment": "Navigation label for the app usage statistics."
+    "Simulate only (Dry Run)" : {
+
     },
-    "Stop": {
-      "comment": "Button label to halt the compression process."
+    "Start" : {
+      "comment" : "Button label to begin the compression process."
     },
-    "Stop processing": {
-      "comment": "Button label to cancel the ongoing compression queue."
+    "Start processing" : {
+
     },
-    "Stopping threads...": {
-      "comment": "Status message shown while waiting for background threads to gracefully terminate."
+    "Statistics" : {
+      "comment" : "Navigation label for the app usage statistics."
     },
-    "Supported formats": {
-      "comment": "Section title listing all file extensions the app can compress."
+    "Stop" : {
+      "comment" : "Button label to halt the compression process."
     },
-    "Supported formats (%lld)": {
-      "comment": "Section title listing the total count of supported file extensions."
+    "Stop processing" : {
+
     },
-    "System resources": {
-      "comment": "Section header for CPU and memory usage settings."
+    "Stopping threads..." : {
+
     },
-    "The temporary file has been cleaned up by the system.": {
-      "comment": "Error message when a working file is unexpectedly deleted by the OS."
+    "Supported formats" : {
+      "comment" : "Section title listing all file extensions the app can compress."
     },
-    "To save files alongside the originals, Chisel needs permission to access '%@'. Please select it in the next screen to grant access.": {
-      "comment": "Explanation text in the security bookmark permission dialog."
+    "Supported formats (%lld)" : {
+      "comment" : "Section title listing the total count of supported file extensions."
     },
-    "Total space saved": {
-      "comment": "Header displaying the cumulative storage saved across all sessions."
+    "System resources" : {
+      "comment" : "Section header for CPU and memory usage settings."
     },
-    "Unknown": {
-      "comment": "Category name for unrecognized file formats."
+    "The temporary file has been cleaned up by the system." : {
+      "comment" : "Error message when a working file is unexpectedly deleted by the OS."
     },
-    "Unsupported": {
-      "comment": "Status label for a file format that cannot be compressed."
+    "To save files alongside the originals, Chisel needs permission to access '%@'. Please select it in the next screen to grant access." : {
+      "comment" : "Explanation text in the security bookmark permission dialog."
     },
-    "Use the add button to select files to compress.": {
-      "comment": "Instructional text pointing to the add files button."
+    "Total space saved" : {
+      "comment" : "Header displaying the cumulative storage saved across all sessions."
     },
-    "Verify data integrity": {
-      "comment": "Settings toggle to enable post-compression checksum verification."
+    "Unknown" : {
+      "comment" : "Category name for unrecognized file formats."
     },
-    "Version %@": {
-      "comment": "Label displaying the app version number."
+    "Unsupported" : {
+      "comment" : "Status label for a file format that cannot be compressed."
     },
-    "Video": {
-      "comment": "Category name for video file formats (e.g., mp4, mkv)."
+    "Use the add button to select files to compress." : {
+      "comment" : "Instructional text pointing to the add files button."
     },
-    "View error details": {
-      "comment": "Button label to expand and read the full error message."
+    "Verify data integrity" : {
+      "comment" : "Settings toggle to enable post-compression checksum verification."
     },
-    "Warning: exceeding default tokens can drastically slow down flexigif processing.": {
-      "comment": "Warning message when the user sets a very high Flexigif token count."
+    "Version %@" : {
+      "comment" : "Label displaying the app version number."
     },
-    "Warning: high iteration count massively increases computational overhead.": {
-      "comment": "Warning message when the user sets a very high Zopfli iteration count."
+    "Video" : {
+      "comment" : "Category name for video file formats (e.g., mp4, mkv)."
     },
-    "Warning: using all threads of your system will make it unresponsive!": {
-      "comment": "Warning message when the user dedicates all CPU threads to compression."
+    "View error details" : {
+      "comment" : "Button label to expand and read the full error message."
     },
-    "When importing a folder, all files in subfolders will be added.": {
-      "comment": "Detailed explanation of the 'Recursive folder import' setting."
+    "Warning: exceeding default tokens can drastically slow down flexigif processing." : {
+      "comment" : "Warning message when the user sets a very high Flexigif token count."
     },
-    "Zopfli / Deflate": {
-      "comment": "Header for settings related to the Zopfli and Deflate compression algorithms."
+    "Warning: high iteration count massively increases computational overhead." : {
+      "comment" : "Warning message when the user sets a very high Zopfli iteration count."
+    },
+    "Warning: using all threads of your system will make it unresponsive!" : {
+      "comment" : "Warning message when the user dedicates all CPU threads to compression."
+    },
+    "When importing a folder, all files in subfolders will be added." : {
+      "comment" : "Detailed explanation of the 'Recursive folder import' setting."
+    },
+    "Zopfli / Deflate" : {
+      "comment" : "Header for settings related to the Zopfli and Deflate compression algorithms."
     }
   },
-  "version": "1.2"
+  "version" : "1.2"
 }
