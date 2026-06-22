@@ -139,7 +139,7 @@ struct CompressionListView: View {
                         Capsule().fill(.gray.opacity(0.2))
                         Capsule()
                             .fill(.green.opacity(0.6))
-                            .frame(width: geo.size.width * CGFloat(min(percentage / 100, 1.0)))
+                            .frame(width: max(0, geo.size.width * CGFloat(min(percentage / 100, 1.0))))
                     }
                 }
             }
