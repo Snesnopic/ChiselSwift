@@ -6,6 +6,7 @@ struct CompressView: View {
     @State private var missingFolderURL: URL?
     @State private var showPermissionAlert = false
     @State private var isPermissionPickerPresented = false
+    @State private var isDryRunPending = false
 
     @State var viewModel = ChiselViewModel()
     @State private var isImporterPresented = false
@@ -145,6 +146,11 @@ struct CompressView: View {
                 }
                 .safeAreaInset(edge: .bottom) {
                     Button(action: {
+                        if viewModel.isProcessing {
+                            viewModel.stopProcessing()
+                        }
+
+                        isDryRunPending = false
                         if let missingDir = viewModel.findMissingPermissionDirectory(for: outputMode) {
                             missingFolderURL = missingDir
                             showPermissionAlert = true
@@ -157,6 +163,7 @@ struct CompressView: View {
                                     threads: threads,
                                     hideUnsupported: hideUnsupported,
                                     outputMode: outputMode,
+                                    dryRun: false,
                                     context: modelContext
                                 )
                             }
@@ -192,6 +199,32 @@ struct CompressView: View {
                         .padding()
                     }
                     .disabled(viewModel.isStopping || (!viewModel.canStartProcessing && !viewModel.isProcessing))
+                    .contextMenu {
+                        if !viewModel.isProcessing && viewModel.canStartProcessing {
+                            Button {
+                                isDryRunPending = true
+                                if let missingDir = viewModel.findMissingPermissionDirectory(for: outputMode) {
+                                    missingFolderURL = missingDir
+                                    showPermissionAlert = true
+                                } else {
+                                    Task {
+                                        await viewModel.startProcessing(
+                                            iterations: iterations,
+                                            iterationsLarge: iterationsLarge,
+                                            maxTokens: maxTokens,
+                                            threads: threads,
+                                            hideUnsupported: hideUnsupported,
+                                            outputMode: outputMode,
+                                            dryRun: true,
+                                            context: modelContext
+                                        )
+                                    }
+                                }
+                            } label: {
+                                Label("Simulate only (Dry Run)", systemImage: "magnifyingglass")
+                            }
+                        }
+                    }
                     .fileImporter(
                         isPresented: $isPermissionPickerPresented,
                         allowedContentTypes: [.folder],
@@ -216,6 +249,7 @@ struct CompressView: View {
                                     threads: threads,
                                     hideUnsupported: hideUnsupported,
                                     outputMode: outputMode,
+                                    dryRun: isDryRunPending,
                                     context: modelContext
                                 )
                             }

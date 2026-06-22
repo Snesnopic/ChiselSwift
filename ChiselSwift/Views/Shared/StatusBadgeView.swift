@@ -18,6 +18,10 @@ struct StatusBadgeView: View {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundColor(.green)
 
+        case .simulated:
+            Image(systemName: "magnifyingglass.circle.fill")
+                .foregroundColor(.blue)
+
         case .noGain:
             Image(systemName: "equal.circle.fill")
                 .foregroundColor(.blue)
@@ -42,6 +46,7 @@ struct StatusBadgeView: View {
         StatusBadgeView(status: .pending)
         StatusBadgeView(status: .processing)
         StatusBadgeView(status: .completed(URL(filePath: "")!))
+        StatusBadgeView(status: .simulated)
         StatusBadgeView(status: .noGain)
         StatusBadgeView(status: .skipped)
         StatusBadgeView(status: .error(""))
@@ -56,6 +61,7 @@ struct StatusBadgeView: View {
         StatusBadgeView(status: .pending)
         StatusBadgeView(status: .processing)
         StatusBadgeView(status: .completed(URL(filePath: "")!))
+        StatusBadgeView(status: .simulated)
         StatusBadgeView(status: .noGain)
         StatusBadgeView(status: .skipped)
         StatusBadgeView(status: .error(""))

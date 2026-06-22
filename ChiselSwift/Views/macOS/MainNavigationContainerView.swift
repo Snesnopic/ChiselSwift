@@ -98,10 +98,41 @@ struct MainNavigationContainerView: View {
                         if !viewModel.items.isEmpty {
                             // combined start/stop button handling isStopping state
                             ToolbarItem(placement: .automatic) {
-                                Button(action: {
-                                    if viewModel.isProcessing {
-                                        viewModel.stopProcessing()
-                                    } else {
+                                if viewModel.isProcessing || viewModel.isStopping || viewModel.isImporting {
+                                    Button(action: {
+                                        if viewModel.isProcessing {
+                                            viewModel.stopProcessing()
+                                        }
+                                    }) {
+                                        if viewModel.isStopping || viewModel.isImporting {
+                                            ProgressView()
+                                                .controlSize(.small)
+                                        } else {
+                                            Label("Stop", systemImage: "stop.fill")
+                                        }
+                                    }
+                                    .disabled(viewModel.isStopping)
+                                } else {
+                                    Menu {
+                                        Button(action: {
+                                            Task {
+                                                await viewModel.startProcessing(
+                                                    iterations: iterations,
+                                                    iterationsLarge: iterationsLarge,
+                                                    maxTokens: maxTokens,
+                                                    threads: threads,
+                                                    hideUnsupported: hideUnsupported,
+                                                    outputMode: outputMode,
+                                                    dryRun: true,
+                                                    context: modelContext
+                                                )
+                                            }
+                                        }) {
+                                            Label("Simulate only (Dry Run)", systemImage: "magnifyingglass")
+                                        }
+                                    } label: {
+                                        Label("Start", systemImage: "play.fill")
+                                    } primaryAction: {
                                         Task {
                                             await viewModel.startProcessing(
                                                 iterations: iterations,
@@ -110,24 +141,13 @@ struct MainNavigationContainerView: View {
                                                 threads: threads,
                                                 hideUnsupported: hideUnsupported,
                                                 outputMode: outputMode,
+                                                dryRun: false,
                                                 context: modelContext
                                             )
                                         }
                                     }
-                                }) {
-                                    if viewModel.isStopping {
-                                        ProgressView()
-                                            .controlSize(.small)
-                                    } else if viewModel.isImporting {
-                                        ProgressView()
-                                            .controlSize(.small)
-                                    } else if viewModel.isProcessing {
-                                        Label("Stop", systemImage: "stop.fill")
-                                    } else {
-                                        Label("Start", systemImage: "play.fill")
-                                    }
+                                    .disabled(!viewModel.canStartProcessing)
                                 }
-                                .disabled(viewModel.isStopping || (!viewModel.canStartProcessing && !viewModel.isProcessing))
                             }
                             ToolbarItem(placement: .automatic) {
                                 Button(action: { isInspectorPresented.toggle() }) {
@@ -151,7 +171,7 @@ struct MainNavigationContainerView: View {
             case .stats:
                 StatsDashboardView()
             case .settings:
-                SettingsView()
+                SettingsView(viewModel: viewModel)
             case .about:
                 AboutView(viewModel: viewModel)
             case .none:
