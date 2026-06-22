@@ -15,7 +15,7 @@ struct MainNavigationContainerView: View {
                     Label("Statistics", systemImage: "chart.bar")
                 }
 
-            SettingsView()
+            SettingsView(viewModel: viewModel)
                 .tabItem {
                     Label("Settings", systemImage: "gearshape")
                 }
