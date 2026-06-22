@@ -223,7 +223,7 @@ final class ChiselViewModel {
 
     // swiftlint:disable cyclomatic_complexity function_parameter_count
     // coordinates the chiselkit engine
-    func startProcessing(iterations: Int, iterationsLarge: Int, maxTokens: Int, threads: Int, hideUnsupported: Bool, outputMode: OutputMode, context: ModelContext) async {
+    func startProcessing(iterations: Int, iterationsLarge: Int, maxTokens: Int, threads: Int, hideUnsupported: Bool, outputMode: OutputMode, dryRun: Bool = false, context: ModelContext) async {
         guard !items.isEmpty else { return }
 
         // filter to process only pending items
@@ -241,6 +241,7 @@ final class ChiselViewModel {
             iterations: UInt32(iterations),
             iterationsLarge: UInt32(iterationsLarge),
             maxTokens: UInt32(maxTokens),
+            dryRun: dryRun,
             threads: UInt32(threads)
         )
 
@@ -315,7 +316,7 @@ final class ChiselViewModel {
 
                     var finalizationFailed = false
 
-                    if isGain {
+                    if isGain && !dryRun {
                         do {
                             let itemToFinalize = isRoot ? parent : (child ?? parent)
                             try self.finalizeFile(item: itemToFinalize, mode: outputMode)
@@ -323,15 +324,17 @@ final class ChiselViewModel {
                             finalizationFailed = true
                             finalMsg = "ERROR SAVING \(targetName): \(error.localizedDescription)"
                         }
+                    } else if isGain && dryRun {
+                        finalMsg = "SIMULATED COMPRESSION: \(targetName) (would save \(formatBytes(Int64(sizeBefore - sizeAfter))))"
                     }
 
                     if isRoot {
                         parent.sizeAfter = Int64(sizeAfter)
-                        parent.status = finalizationFailed ? .error("Save failed") : (isGain ? .completed(parent.url) : .noGain)
+                        parent.status = finalizationFailed ? .error("Save failed") : (isGain ? (dryRun ? .simulated : .completed(parent.url)) : .noGain)
                         parent.logs.append(finalMsg)
                         logs.append(finalMsg)
 
-                        if isGain && !finalizationFailed {
+                        if isGain && !finalizationFailed && !dryRun {
                             let duration = CFAbsoluteTimeGetCurrent() - (startTimes[path] ?? CFAbsoluteTimeGetCurrent())
                             let stat = CompressionStat(
                                 fileExtension: parent.originalExtension,
@@ -346,7 +349,7 @@ final class ChiselViewModel {
                             var localChild = unwrappedChild
                             localChild.size = Int64(sizeBefore)
                             localChild.sizeAfter = Int64(sizeAfter)
-                            localChild.status = finalizationFailed ? .error("Save failed") : (isGain ? .completed(localChild.url) : .noGain)
+                            localChild.status = finalizationFailed ? .error("Save failed") : (isGain ? (dryRun ? .simulated : .completed(localChild.url)) : .noGain)
                             localChild.logs.append(finalMsg)
                             child = localChild
                         }

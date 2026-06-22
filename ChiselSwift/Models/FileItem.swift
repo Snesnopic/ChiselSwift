@@ -43,6 +43,7 @@ struct FileItem: Identifiable, Equatable {
         case noGain
         case skipped
         case completed(URL)
+        case simulated
         case error(String)
         case stopped
     }
