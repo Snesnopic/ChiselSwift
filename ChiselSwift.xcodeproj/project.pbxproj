@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9D20936C2FED1415006BB6EC /* Chisel in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD5A8CA2F96568800F54E92 /* Chisel */; };
 		9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D8650902F8C2D5200A03D31 /* libiconv.tbd */; };
 		9DDE60EC2F8CE4CA001CA9A1 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */; };
+		9DECA3542FF10885001B0326 /* Chisel in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD5A9142F96A2AD00F54E92 /* Chisel */; };
 		9DFE00212F92763800C4F91C /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 9DFE00202F92763800C4F91C /* .swiftlint.yml */; };
 /* End PBXBuildFile section */
 
@@ -52,7 +52,7 @@
 		9D8650792F8C2CB700A03D31 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				9D20936C2FED1415006BB6EC /* Chisel in Frameworks */,
+				9DECA3542FF10885001B0326 /* Chisel in Frameworks */,
 				9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */,
 			);
 		};

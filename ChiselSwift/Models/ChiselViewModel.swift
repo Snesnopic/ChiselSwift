@@ -285,11 +285,11 @@ final class ChiselViewModel {
                     }
                 }
 
-            case .start(let path):
+            case .start(let path, let parentContainer, _):
                 startTimes[path] = CFAbsoluteTimeGetCurrent()
 
                 // .start is ONLY emitted for real compression targets, so we safely create the UI node
-                updateItem(for: path, createIfNeeded: true) { parent, child, isRoot in
+                updateItem(for: path, createIfNeeded: true, parentHint: parentContainer) { parent, child, isRoot in
                     if isRoot {
                         parent.status = .processing
                         parent.logs.append("STARTED PROCESSING")
@@ -308,10 +308,30 @@ final class ChiselViewModel {
                     }
                 }
 
-            case .finish(let path, let sizeBefore, let sizeAfter, _):
-                updateItem(for: path, createIfNeeded: true) { parent, child, isRoot in
+            case .finish(let path, let sizeBefore, let sizeAfter, _, let parentContainer, let isContainerSelf):
+                updateItem(for: path, createIfNeeded: true, parentHint: parentContainer) { parent, child, isRoot in
                     let targetName = URL(fileURLWithPath: path).lastPathComponent
                     let isGain = sizeBefore > sizeAfter
+
+                    // For "mixed" processors (Flac/Ape), this event is only the container's own
+                    // direct recompression pass, not its final state: chisel still has to finalize
+                    // (Phase 3) the same original path to re-embed extracted content (e.g. cover art).
+                    // Finalizing/moving the temp file now would race with that later step and crash
+                    // the engine when it can't find the file it expects anymore. Just log progress
+                    // and wait for the matching finalize event (isContainer == false) to finalize.
+                    if isContainerSelf {
+                        let msg = isGain
+                            ? "COMPRESSED CONTAINER STREAM: \(targetName) (finalizing embedded content...)"
+                            : "NO GAIN ON CONTAINER STREAM: \(targetName) (finalizing embedded content...)"
+                        if isRoot {
+                            parent.logs.append(msg)
+                        } else {
+                            child?.logs.append(msg)
+                        }
+                        logs.append(msg)
+                        return
+                    }
+
                     var finalMsg = isGain ? "SUCCESSFULLY COMPRESSED: \(targetName) (saved \(formatBytes(Int64(sizeBefore - sizeAfter))))" : "NO GAIN: \(targetName)"
 
                     var finalizationFailed = false
@@ -357,8 +377,8 @@ final class ChiselViewModel {
                         logs.append("[CHILD] \(finalMsg)")
                     }
                 }
-            case .error(let path, let message):
-                updateItem(for: path, createIfNeeded: true) { parent, child, isRoot in
+            case .error(let path, let message, let parentContainer, _):
+                updateItem(for: path, createIfNeeded: true, parentHint: parentContainer) { parent, child, isRoot in
                     let targetName = URL(fileURLWithPath: path).lastPathComponent
                     let errorMsg = "ERROR [\(targetName)]: \(message)"
 
@@ -374,13 +394,13 @@ final class ChiselViewModel {
                     }
                 }
 
-            case .skipped(let path, let reason):
+            case .skipped(let path, let reason, let parentContainer, _):
                 let lowerReason = reason.lowercased()
                 let isNoGain = lowerReason.contains("no gain") || lowerReason.contains("size")
                 let shouldHideChild = hideUnsupported && !isNoGain
 
                 // create child UI node only if it's a "no gain" skip. Otherwise, discard it entirely.
-                updateItem(for: path, createIfNeeded: !shouldHideChild) { parent, child, isRoot in
+                updateItem(for: path, createIfNeeded: !shouldHideChild, parentHint: parentContainer) { parent, child, isRoot in
                     let targetName = URL(fileURLWithPath: path).lastPathComponent
                     let skipMsg = "SKIPPED [\(targetName)]: \(reason)"
                     let computedStatus: FileItem.ProcessingStatus = isNoGain ? .noGain : .skipped
@@ -519,7 +539,7 @@ final class ChiselViewModel {
         items.remove(atOffsets: IndexSet(indicesToRemove))
     }
 
-    private func findIndexPath(for path: String, in nodes: [FileItem]) -> [Int]? {
+    private func findIndexPath(for path: String, parentHint: String? = nil, in nodes: [FileItem]) -> [Int]? {
         if let idx = nodes.firstIndex(where: { $0.tempURL.path == path }) {
             return [idx]
         }
@@ -530,6 +550,12 @@ final class ChiselViewModel {
             }
         }
 
+        // exact resolution via chisel's parent_container (>= v1.8.0)
+        if let parentHint, let parentIndexPath = findIndexPath(for: parentHint, in: nodes) {
+            return parentIndexPath
+        }
+
+        // fallback heuristic on folder name, for events chisel doesn't annotate yet (e.g. analyze-phase skips)
         let pathURL = URL(fileURLWithPath: path)
         let folderName = pathURL.deletingLastPathComponent().lastPathComponent
 
@@ -551,8 +577,8 @@ final class ChiselViewModel {
         return nil
     }
 
-    private func updateItem(for path: String, createIfNeeded: Bool = true, action: (inout FileItem, inout FileItem?, Bool) -> Void) {
-        guard let indexPath = findIndexPath(for: path, in: items), !indexPath.isEmpty else { return }
+    private func updateItem(for path: String, createIfNeeded: Bool = true, parentHint: String? = nil, action: (inout FileItem, inout FileItem?, Bool) -> Void) {
+        guard let indexPath = findIndexPath(for: path, parentHint: parentHint, in: items), !indexPath.isEmpty else { return }
 
         func applyAction(nodes: inout [FileItem], indices: ArraySlice<Int>) {
             let idx = indices.first!

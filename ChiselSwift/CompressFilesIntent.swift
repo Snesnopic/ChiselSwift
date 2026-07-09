@@ -74,7 +74,7 @@ struct CompressFilesIntent: AppIntent {
         let stream = await chisel.process(files: workingUrls)
         for await event in stream {
             switch event {
-            case .finish(let path, let before, let after, _):
+            case .finish(let path, let before, let after, _, _, _):
                 let url = URL(fileURLWithPath: path)
 
                 // only export and track the root requested files, ignoring internal extracted files
