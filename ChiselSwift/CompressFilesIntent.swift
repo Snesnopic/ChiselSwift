@@ -34,7 +34,6 @@ struct CompressFilesIntent: AppIntent {
         let defaults = UserDefaults.standard
         let iterations = UInt32(defaults.integer(forKey: "iterations") == 0 ? 15 : defaults.integer(forKey: "iterations"))
         let iterationsLarge = UInt32(defaults.integer(forKey: "iterationsLarge") == 0 ? 5 : defaults.integer(forKey: "iterationsLarge"))
-        let maxTokens = UInt32(defaults.integer(forKey: "maxTokens") == 0 ? 10000 : defaults.integer(forKey: "maxTokens"))
         let threads = UInt32(defaults.integer(forKey: "threads") == 0 ? 4 : defaults.integer(forKey: "threads"))
 
         // 2. setup isolated swiftdata context
@@ -46,7 +45,6 @@ struct CompressFilesIntent: AppIntent {
         await chisel.configure(
             iterations: iterations,
             iterationsLarge: iterationsLarge,
-            maxTokens: maxTokens,
             preserveMetadata: true,
             verifyChecksums: false,
             threads: threads,

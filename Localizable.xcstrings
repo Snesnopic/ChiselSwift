@@ -52,9 +52,6 @@
     "Amount of iterations of the zopfli algorithm on deflate files (pngs, pdfs, archives)." : {
       "comment" : "Description text for the Zopfli iterations slider."
     },
-    "Amount of tokens used for flexigif compression." : {
-      "comment" : "Description text for the Flexigif tokens slider."
-    },
     "App icon by " : {
       "comment" : "Prefix text for attributing the app icon designer."
     },
@@ -150,9 +147,6 @@
     "Files" : {
       "comment" : "Sidebar or section title for the file queue."
     },
-    "Flexigif" : {
-      "comment" : "Label for the Flexigif compression settings."
-    },
     "Font" : {
       "comment" : "Category name for font file formats (e.g., ttf, otf)."
     },
@@ -197,9 +191,6 @@
     },
     "Many container files, such as PDFs, contain a lot of internal files that can't be processed. This option hides these files." : {
       "comment" : "Detailed explanation of the 'Hide unsupported subfiles' setting."
-    },
-    "Maximum dictionary tokens" : {
-      "comment" : "Label for the maximum dictionary tokens setting in Flexigif."
     },
     "No files selected" : {
       "comment" : "Empty state message when no files are selected in the list."
@@ -341,9 +332,6 @@
     },
     "View error details" : {
       "comment" : "Button label to expand and read the full error message."
-    },
-    "Warning: exceeding default tokens can drastically slow down flexigif processing." : {
-      "comment" : "Warning message when the user sets a very high Flexigif token count."
     },
     "Warning: high iteration count massively increases computational overhead." : {
       "comment" : "Warning message when the user sets a very high Zopfli iteration count."

@@ -5,7 +5,6 @@ import UniformTypeIdentifiers
 struct SettingsView: View {
     @AppStorage("iterations") private var iterations: Int = 15
     @AppStorage("iterationsLarge") private var iterationsLarge: Int = 5
-    @AppStorage("maxTokens") private var maxTokens: Int = 10000
     @AppStorage("preserveMetadata") private var preserveMetadata: Bool = true
     @AppStorage("verifyChecksums") private var verifyChecksums: Bool = false
     @AppStorage("threads") private var threads: Int = max(1, ProcessInfo.processInfo.activeProcessorCount / 2)
@@ -222,38 +221,11 @@ private func selectFolder() {
                             Text("Amount of iterations of the zopfli algorithm on deflate files (pngs, pdfs, archives).")
                         }
 
-                        Section {
-                            VStack(alignment: .leading) {
-                                HStack {
-                                    Text("Maximum dictionary tokens")
-                                    Spacer()
-                                    Text("\(maxTokens)")
-                                }
-                                Slider(
-                                    value: $maxTokens.asDouble,
-                                    in: 1000...200000,
-                                    step: 100
-                                )
-                                HStack {
-                                    Image(systemName: "exclamationmark.triangle.fill")
-                                    Text("Warning: exceeding default tokens can drastically slow down flexigif processing.")
-                                        .font(.caption)
-                                }
-                                .opacity((maxTokens > 10000) ? 1 : 0)
-                                .foregroundStyle(.yellow)
-                            }
-                        } header: {
-                            Text("Flexigif")
-                        } footer: {
-                            Text("Amount of tokens used for flexigif compression.")
-                        }
-
                         // reset defaults button for safety
                         Section {
                             Button(role: .destructive) {
                                 iterations = 15
                                 iterationsLarge = 5
-                                maxTokens = 10000
                             } label: {
                                 Text("Reset advanced parameters to defaults")
                             }
