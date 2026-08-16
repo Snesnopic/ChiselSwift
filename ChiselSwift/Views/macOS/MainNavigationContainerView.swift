@@ -21,11 +21,13 @@ struct MainNavigationContainerView: View {
     @State private var selectedFileID: UUID?
     @State private var isInspectorPresented = false
     @State private var isImporterPresented = false
+    @State private var missingFolderURL: URL?
+    @State private var showPermissionAlert = false
+    @State private var isDryRunPending = false
 
     // app settings for compression
     @AppStorage("iterations") private var iterations: Int = 15
     @AppStorage("iterationsLarge") private var iterationsLarge: Int = 5
-    @AppStorage("maxTokens") private var maxTokens: Int = 10000
     @AppStorage("threads") private var threads: Int = max(1, ProcessInfo.processInfo.activeProcessorCount / 2)
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
     @AppStorage("recursiveFolderImport") private var recursiveFolderImport: Bool = true
@@ -85,7 +87,7 @@ struct MainNavigationContainerView: View {
                                     }) {
                                         Label("Clear all", systemImage: "trash")
                                     }
-                                    .disabled(viewModel.isProcessing)
+                                    .disabled(viewModel.isProcessing || viewModel.isImporting)
                                 }
                             }
                         }
@@ -93,7 +95,7 @@ struct MainNavigationContainerView: View {
                             Button(action: { isImporterPresented.toggle() }) {
                                 Label("Add Files", systemImage: "plus")
                             }
-                            .disabled(viewModel.isProcessing)
+                            .disabled(viewModel.isProcessing || viewModel.isImporting)
                         }
                         if !viewModel.items.isEmpty {
                             // combined start/stop button handling isStopping state
@@ -115,36 +117,14 @@ struct MainNavigationContainerView: View {
                                 } else {
                                     Menu {
                                         Button(action: {
-                                            Task {
-                                                await viewModel.startProcessing(
-                                                    iterations: iterations,
-                                                    iterationsLarge: iterationsLarge,
-                                                    maxTokens: maxTokens,
-                                                    threads: threads,
-                                                    hideUnsupported: hideUnsupported,
-                                                    outputMode: outputMode,
-                                                    dryRun: true,
-                                                    context: modelContext
-                                                )
-                                            }
+                                            startOrRequestPermission(dryRun: true)
                                         }) {
                                             Label("Simulate only (Dry Run)", systemImage: "magnifyingglass")
                                         }
                                     } label: {
                                         Label("Start", systemImage: "play.fill")
                                     } primaryAction: {
-                                        Task {
-                                            await viewModel.startProcessing(
-                                                iterations: iterations,
-                                                iterationsLarge: iterationsLarge,
-                                                maxTokens: maxTokens,
-                                                threads: threads,
-                                                hideUnsupported: hideUnsupported,
-                                                outputMode: outputMode,
-                                                dryRun: false,
-                                                context: modelContext
-                                            )
-                                        }
+                                        startOrRequestPermission(dryRun: false)
                                     }
                                     .disabled(!viewModel.canStartProcessing)
                                 }
@@ -200,6 +180,74 @@ struct MainNavigationContainerView: View {
                 return true
             }
         })
+        .alert("Permission required", isPresented: $showPermissionAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Select folder") {
+                grantAccessAndRetry()
+            }
+        } message: {
+            if missingFolderURL?.path == "GLOBAL_OUTPUT_FOLDER" {
+                Text("Please select a default output folder for your compressed files.")
+            } else {
+                Text("To save files alongside the originals, Chisel needs permission to access '\(missingFolderURL?.lastPathComponent ?? "the folder")'. Please select it in the next screen to grant access.")
+            }
+        }
+    }
+
+    // checks output-folder/write permissions before starting a batch; if something
+    // is missing, prompts the user instead of letting finalizeFile fail per-file later.
+    private func startOrRequestPermission(dryRun: Bool) {
+        isDryRunPending = dryRun
+        if let missingDir = viewModel.findMissingPermissionDirectory(for: outputMode) {
+            missingFolderURL = missingDir
+            showPermissionAlert = true
+        } else {
+            Task {
+                await viewModel.startProcessing(
+                    iterations: iterations,
+                    iterationsLarge: iterationsLarge,
+                    threads: threads,
+                    hideUnsupported: hideUnsupported,
+                    outputMode: outputMode,
+                    dryRun: dryRun,
+                    context: modelContext
+                )
+            }
+        }
+    }
+
+    private func grantAccessAndRetry() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+
+        if missingFolderURL?.path == "GLOBAL_OUTPUT_FOLDER" {
+            panel.message = "Select the output directory for compressed files"
+        } else {
+            panel.directoryURL = missingFolderURL
+            panel.message = "Grant access to '\(missingFolderURL?.lastPathComponent ?? "this folder")'"
+        }
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        if missingFolderURL?.path == "GLOBAL_OUTPUT_FOLDER" {
+            viewModel.saveBookmark(for: url)
+        } else if url.startAccessingSecurityScopedResource() {
+            viewModel.sessionAuthorizedFolders.insert(url)
+        }
+
+        Task {
+            await viewModel.startProcessing(
+                iterations: iterations,
+                iterationsLarge: iterationsLarge,
+                threads: threads,
+                hideUnsupported: hideUnsupported,
+                outputMode: outputMode,
+                dryRun: isDryRunPending,
+                context: modelContext
+            )
+        }
     }
 }
 

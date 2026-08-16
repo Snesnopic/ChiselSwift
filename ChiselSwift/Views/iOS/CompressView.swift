@@ -16,7 +16,6 @@ struct CompressView: View {
 
     @AppStorage("iterations") private var iterations: Int = 15
     @AppStorage("iterationsLarge") private var iterationsLarge: Int = 5
-    @AppStorage("maxTokens") private var maxTokens: Int = 10000
     @AppStorage("threads") private var threads: Int = 4
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
     @AppStorage("recursiveFolderImport") private var recursiveFolderImport: Bool = true
@@ -51,7 +50,7 @@ struct CompressView: View {
                         Button(action: { isImporterPresented.toggle() }) {
                             Image(systemName: "plus")
                         }
-                        .disabled(viewModel.isProcessing)
+                        .disabled(viewModel.isProcessing || viewModel.isImporting)
                     }
                 }
                 .fileImporter(
@@ -89,13 +88,13 @@ struct CompressView: View {
                         Button(action: { viewModel.clearItems() }) {
                             Image(systemName: "trash")
                         }
-                        .disabled(viewModel.items.isEmpty || viewModel.isProcessing)
+                        .disabled(viewModel.items.isEmpty || viewModel.isProcessing || viewModel.isImporting)
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button(action: { isImporterPresented.toggle() }) {
                             Image(systemName: "plus")
                         }
-                        .disabled(viewModel.isProcessing)
+                        .disabled(viewModel.isProcessing || viewModel.isImporting)
                     }
                 }
                 .dropDestination(for: URL.self) { items, _ in
@@ -159,7 +158,6 @@ struct CompressView: View {
                                 await viewModel.startProcessing(
                                     iterations: iterations,
                                     iterationsLarge: iterationsLarge,
-                                    maxTokens: maxTokens,
                                     threads: threads,
                                     hideUnsupported: hideUnsupported,
                                     outputMode: outputMode,
@@ -211,7 +209,6 @@ struct CompressView: View {
                                         await viewModel.startProcessing(
                                             iterations: iterations,
                                             iterationsLarge: iterationsLarge,
-                                            maxTokens: maxTokens,
                                             threads: threads,
                                             hideUnsupported: hideUnsupported,
                                             outputMode: outputMode,
@@ -245,7 +242,6 @@ struct CompressView: View {
                                 await viewModel.startProcessing(
                                     iterations: iterations,
                                     iterationsLarge: iterationsLarge,
-                                    maxTokens: maxTokens,
                                     threads: threads,
                                     hideUnsupported: hideUnsupported,
                                     outputMode: outputMode,

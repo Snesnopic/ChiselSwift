@@ -54,20 +54,6 @@ final class ChiselViewModel {
     var activeSecurityBookmarks: Set<URL> = []
     @ObservationIgnored
     @AppStorage("outputFolderBookmark") private var outputFolderBookmark: Data?
-    #if os(macOS)
-    func selectOutputFolder() {
-
-        let panel = NSOpenPanel()
-        panel.canChooseFiles = false
-        panel.canChooseDirectories = true
-        panel.allowsMultipleSelection = false
-
-        if panel.runModal() == .OK, let url = panel.url {
-            saveBookmark(for: url)
-        }
-
-    }
-#endif
     var sessionAuthorizedFolders: Set<URL> = []
 
     func saveBookmark(for url: URL) {
@@ -223,7 +209,7 @@ final class ChiselViewModel {
 
     // swiftlint:disable cyclomatic_complexity function_parameter_count
     // coordinates the chiselkit engine
-    func startProcessing(iterations: Int, iterationsLarge: Int, maxTokens: Int, threads: Int, hideUnsupported: Bool, outputMode: OutputMode, dryRun: Bool = false, context: ModelContext) async {
+    func startProcessing(iterations: Int, iterationsLarge: Int, threads: Int, hideUnsupported: Bool, outputMode: OutputMode, dryRun: Bool = false, context: ModelContext) async {
         guard !items.isEmpty else { return }
 
         // filter to process only pending items
@@ -232,7 +218,7 @@ final class ChiselViewModel {
 
         let urlsToProcess = pendingItems.map { $0.tempURL }
         isProcessing = true
-        print("STARTING BATCH PROCESSING WITH \(iterations) ITERATIONS, \(maxTokens) TOKENS, \(threads) THREADS")
+        print("STARTING BATCH PROCESSING WITH \(iterations) ITERATIONS, \(threads) THREADS")
 
         let chisel = Chisel()
         currentChisel = chisel
@@ -240,7 +226,6 @@ final class ChiselViewModel {
         await chisel.configure(
             iterations: UInt32(iterations),
             iterationsLarge: UInt32(iterationsLarge),
-            maxTokens: UInt32(maxTokens),
             dryRun: dryRun,
             threads: UInt32(threads)
         )
@@ -433,9 +418,14 @@ final class ChiselViewModel {
                     }
                 }
 
-            case .log(let tag, let message):
-                logs.append("[\(tag)] \(message)")
-                print("CHISELKIT LOG: [\(tag)] \(message)")
+            case .log(let tag, let message, let level):
+                print("CHISELKIT LOG: [\(level)] [\(tag)] \(message)")
+
+                // chisel's internal Debug-level tracing (e.g. "Entering/Exiting recompress
+                // for X") fires per-file and would flood the UI; keep it console-only.
+                if level != "DEBUG" {
+                    logs.append("[\(level)] [\(tag)] \(message)")
+                }
             }
         }
 
@@ -726,16 +716,19 @@ final class ChiselViewModel {
             try fm.moveItem(at: original, to: backupURL)
             try fm.moveItem(at: temp, to: original)
         case .outputFolder:
-            if let destFolder = getOutputFolderURL() {
-                if destFolder.startAccessingSecurityScopedResource() {
-                    var destURL = destFolder.appendingPathComponent(original.lastPathComponent)
-                    destURL = generateUniqueURL(for: destURL)
-                    print("MOVING TO CUSTOM FOLDER: \(destURL.path)")
-                    try? fm.removeItem(at: destURL)
-                    try fm.moveItem(at: temp, to: destURL)
-                    destFolder.stopAccessingSecurityScopedResource()
-                }
+            guard let destFolder = getOutputFolderURL() else {
+                throw NSError(domain: "ChiselError", code: 2, userInfo: [NSLocalizedDescriptionKey: "NO OUTPUT FOLDER SELECTED"])
             }
+            guard destFolder.startAccessingSecurityScopedResource() else {
+                throw NSError(domain: "ChiselError", code: 3, userInfo: [NSLocalizedDescriptionKey: "PERMISSION DENIED FOR OUTPUT FOLDER"])
+            }
+            defer { destFolder.stopAccessingSecurityScopedResource() }
+
+            var destURL = destFolder.appendingPathComponent(original.lastPathComponent)
+            destURL = generateUniqueURL(for: destURL)
+            print("MOVING TO CUSTOM FOLDER: \(destURL.path)")
+            try? fm.removeItem(at: destURL)
+            try fm.moveItem(at: temp, to: destURL)
         }
     }
     func findItem(with id: UUID, in searchItems: [FileItem]? = nil) -> FileItem? {
