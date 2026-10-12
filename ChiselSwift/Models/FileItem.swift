@@ -53,9 +53,18 @@ struct FileItem: Identifiable, Equatable {
             return FileCategory.category(for: originalExtension).iconName
         }
 
-    /// Checks if the temporary working copy is available for preview.
-    var isPreviewAvailable: Bool {
-            FileManager.default.fileExists(atPath: tempURL.path)
+    /// The best URL to preview this file's current content, if any.
+    /// Prefers the original location (finalizing leaves it valid, whichever mode is
+    /// used), falling back to the temporary working copy when that's all that exists
+    /// (mid-processing, or an extracted child whose container was never reassembled).
+    var previewURL: URL? {
+            if FileManager.default.fileExists(atPath: url.path) {
+                return url
+            }
+            if FileManager.default.fileExists(atPath: tempURL.path) {
+                return tempURL
+            }
+            return nil
         }
 }
 

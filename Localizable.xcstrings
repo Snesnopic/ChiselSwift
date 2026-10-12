@@ -303,6 +303,9 @@
     "System resources" : {
       "comment" : "Section header for CPU and memory usage settings."
     },
+    "Tap to preview" : {
+
+    },
     "The temporary file has been cleaned up by the system." : {
       "comment" : "Error message when a working file is unexpectedly deleted by the OS."
     },

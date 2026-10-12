@@ -1,11 +1,14 @@
 import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
+import QuickLook
 
 struct FileInspectorView: View {
     let file: FileItem?
     let allLogs: [String]
     var showsToolbarAction: Bool = true
+
+    @State private var quickLookURL: URL?
 
     var body: some View {
         Group {
@@ -89,40 +92,67 @@ struct FileInspectorView: View {
             }
 #endif
         }
+        .quickLookPreview($quickLookURL)
     }
 
-    // dynamically generate a preview if the file is a supported image
+    // tappable thumbnail (image types get an actual preview, everything else a generic
+    // icon) that opens the full QuickLook preview - which, unlike AsyncImage, can render
+    // PDFs, audio, video and most document formats, not just images.
     @ViewBuilder
     private func previewView(for file: FileItem) -> some View {
-        if let utType = UTType(filenameExtension: file.originalExtension), utType.conforms(to: .image) {
+        if let previewURL = file.previewURL {
+            Button {
+                quickLookURL = previewURL
+            } label: {
+                previewThumbnail(for: file, url: previewURL)
+            }
+            .buttonStyle(.plain)
+        } else {
+            // file was cleaned up by the system
+            ContentUnavailableView(
+                "Preview unavailable",
+                systemImage: "eye.slash",
+                description: Text("The temporary file has been cleaned up by the system.")
+            )
+            .frame(maxHeight: 140)
+            .padding(.bottom, 8)
+        }
+    }
 
-            if file.isPreviewAvailable {
-                AsyncImage(url: file.url) { phase in
+    @ViewBuilder
+    private func previewThumbnail(for file: FileItem, url: URL) -> some View {
+        Group {
+            if let utType = UTType(filenameExtension: file.originalExtension), utType.conforms(to: .image) {
+                AsyncImage(url: url) { phase in
                     if let image = phase.image {
                         image
                             .resizable()
                             .scaledToFit()
-                            .frame(maxHeight: 140)
-                            .cornerRadius(8)
                     } else if phase.error != nil {
-                        EmptyView()
+                        genericPreviewPlaceholder(for: file)
                     } else {
                         ProgressView()
-                            .frame(height: 140)
-                            .frame(maxWidth: .infinity)
                     }
                 }
-                .padding(.bottom, 8)
             } else {
-                // file was cleaned up by the system
-                ContentUnavailableView(
-                    "Preview unavailable",
-                    systemImage: "eye.slash",
-                    description: Text("The temporary file has been cleaned up by the system.")
-                )
-                .frame(maxHeight: 140)
-                .padding(.bottom, 8)
+                genericPreviewPlaceholder(for: file)
             }
+        }
+        .frame(maxWidth: .infinity, maxHeight: 140)
+        .background(.quinary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(.bottom, 8)
+    }
+
+    private func genericPreviewPlaceholder(for file: FileItem) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: file.typeIconName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 40, height: 40)
+                .foregroundStyle(.secondary)
+            Text("Tap to preview")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 
