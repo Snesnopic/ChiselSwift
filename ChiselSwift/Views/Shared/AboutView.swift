@@ -18,8 +18,7 @@ struct AboutView: View {
         ScrollView {
             VStack(spacing: 24) {
 
-                AppIconView()
-                    .aspectRatio(contentMode: .fit)
+                AppIconView().scaledToFit()
                     .frame(width: 80, height: 80)
                     .foregroundColor(.blue)
 
