@@ -54,6 +54,12 @@ final class ChiselViewModel {
     var activeSecurityBookmarks: Set<URL> = []
     @ObservationIgnored
     @AppStorage("outputFolderBookmark") private var outputFolderBookmark: Data?
+    @ObservationIgnored
+    @AppStorage("preserveMetadata") private var preserveMetadata: Bool = true
+    @ObservationIgnored
+    @AppStorage("verifyChecksums") private var verifyChecksums: Bool = false
+    @ObservationIgnored
+    @AppStorage("breakSignatures") private var breakSignatures: Bool = false
     var sessionAuthorizedFolders: Set<URL> = []
 
     func saveBookmark(for url: URL) {
@@ -226,6 +232,9 @@ final class ChiselViewModel {
         await chisel.configure(
             iterations: UInt32(iterations),
             iterationsLarge: UInt32(iterationsLarge),
+            preserveMetadata: preserveMetadata,
+            verifyChecksums: verifyChecksums,
+            breakSignatures: breakSignatures,
             dryRun: dryRun,
             threads: UInt32(threads)
         )

@@ -7,6 +7,7 @@ struct SettingsView: View {
     @AppStorage("iterationsLarge") private var iterationsLarge: Int = 5
     @AppStorage("preserveMetadata") private var preserveMetadata: Bool = true
     @AppStorage("verifyChecksums") private var verifyChecksums: Bool = false
+    @AppStorage("breakSignatures") private var breakSignatures: Bool = false
     @AppStorage("threads") private var threads: Int = max(1, ProcessInfo.processInfo.activeProcessorCount / 2)
     @AppStorage("hideUnsupported") private var hideUnsupported: Bool = true
     @AppStorage("recursiveFolderImport") private var recursiveFolderImport: Bool = true
@@ -131,6 +132,12 @@ private func selectFolder() {
                         Toggle("Verify data integrity", isOn: $verifyChecksums)
                     } footer: {
                         Text("Perform an extra check after each compression to ensure the content of the modified file perfectly matches the original file. Guarantees that your files don't degrade in quality, but makes processing slower.")
+                    }
+
+                    Section {
+                        Toggle("Optimize signed files", isOn: $breakSignatures)
+                    } footer: {
+                        Text("Digitally signed files (signed PDFs and Office documents, app packages, signed executables, photos with content credentials) are skipped by default. Optimizing them invalidates their signature.")
                     }
 
                     Section {

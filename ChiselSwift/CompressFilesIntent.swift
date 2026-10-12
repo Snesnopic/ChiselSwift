@@ -35,6 +35,9 @@ struct CompressFilesIntent: AppIntent {
         let iterations = UInt32(defaults.integer(forKey: "iterations") == 0 ? 15 : defaults.integer(forKey: "iterations"))
         let iterationsLarge = UInt32(defaults.integer(forKey: "iterationsLarge") == 0 ? 5 : defaults.integer(forKey: "iterationsLarge"))
         let threads = UInt32(defaults.integer(forKey: "threads") == 0 ? 4 : defaults.integer(forKey: "threads"))
+        let preserveMetadata = defaults.object(forKey: "preserveMetadata") as? Bool ?? true
+        let verifyChecksums = defaults.bool(forKey: "verifyChecksums")
+        let breakSignatures = defaults.bool(forKey: "breakSignatures")
 
         // 2. setup isolated swiftdata context
         let container = try ModelContainer(for: CompressionStat.self)
@@ -45,8 +48,9 @@ struct CompressFilesIntent: AppIntent {
         await chisel.configure(
             iterations: iterations,
             iterationsLarge: iterationsLarge,
-            preserveMetadata: true,
-            verifyChecksums: false,
+            preserveMetadata: preserveMetadata,
+            verifyChecksums: verifyChecksums,
+            breakSignatures: breakSignatures,
             threads: threads,
             outputDirectory: nil
         )
