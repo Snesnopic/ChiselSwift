@@ -76,21 +76,24 @@ struct CompressFilesIntent: AppIntent {
         let stream = await chisel.process(files: workingUrls)
         for await event in stream {
             switch event {
-            case .finish(let path, let before, let after, _, _, _):
+            // a container's own recompression is followed by its final rebuild, which reports the result
+            case .finish(let path, let before, let after, _, _, let isContainer) where !isContainer:
                 let url = URL(fileURLWithPath: path)
 
                 // only export and track the root requested files, ignoring internal extracted files
                 if workingUrls.contains(where: { $0.path == url.path }) {
                     outputFiles.append(IntentFile(fileURL: url))
 
-                    let duration = Date().timeIntervalSince(startTime)
-                    let stat = CompressionStat(
-                        fileExtension: url.pathExtension,
-                        originalSize: Int64(before),
-                        compressedSize: Int64(after),
-                        durationSeconds: duration
-                    )
-                    context.insert(stat)
+                    if after < before {
+                        let duration = Date().timeIntervalSince(startTime)
+                        let stat = CompressionStat(
+                            fileExtension: url.pathExtension,
+                            originalSize: Int64(before),
+                            compressedSize: Int64(after),
+                            durationSeconds: duration
+                        )
+                        context.insert(stat)
+                    }
                 }
             default:
                 break
