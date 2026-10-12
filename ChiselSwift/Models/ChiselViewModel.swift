@@ -466,6 +466,23 @@ final class ChiselViewModel {
         var localItems = items
         var logsToAppend: [String] = []
 
+        func discardSubtree(_ nodes: inout [FileItem]) {
+            for j in nodes.indices {
+                switch nodes[j].status {
+                case .completed, .noGain, .simulated:
+                    nodes[j].status = .stopped
+                    let msg = "DISCARDED: PARENT CONTAINER WAS NOT FINALIZED"
+                    nodes[j].logs.append(msg)
+                    logsToAppend.append("[\(nodes[j].url.lastPathComponent)] \(msg)")
+                default:
+                    break
+                }
+                if nodes[j].children != nil {
+                    discardSubtree(&nodes[j].children!)
+                }
+            }
+        }
+
         func traverseAndMark(nodes: inout [FileItem]) {
             for i in 0..<nodes.count {
                 let currentStatus = nodes[i].status
@@ -482,6 +499,18 @@ final class ChiselViewModel {
 
                 if nodes[i].children != nil {
                     traverseAndMark(nodes: &nodes[i].children!)
+
+                    // containers are rebuilt (Phase 3) only after every file finishes Phase 2,
+                    // inner ones before outer ones, so a stop can leave descendants that finished
+                    // looking "done" (even a rebuilt inner container) while the container that
+                    // was supposed to embed them never got rebuilt. Their results only exist
+                    // in a temp dir the user will never see - reflect that on the whole subtree.
+                    switch nodes[i].status {
+                    case .completed, .noGain, .simulated:
+                        break
+                    default:
+                        discardSubtree(&nodes[i].children!)
+                    }
                 }
             }
         }
