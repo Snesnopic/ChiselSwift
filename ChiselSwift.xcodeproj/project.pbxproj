@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D8650902F8C2D5200A03D31 /* libiconv.tbd */; };
 		9DDE60EC2F8CE4CA001CA9A1 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */; };
 		9DF34F2330000E8D008FEF55 /* Chisel in Frameworks */ = {isa = PBXBuildFile; productRef = 9D86508B2F8C2CE100A03D31 /* Chisel */; };
 		9DFE00212F92763800C4F91C /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 9DFE00202F92763800C4F91C /* .swiftlint.yml */; };
@@ -15,7 +14,6 @@
 
 /* Begin PBXFileReference section */
 		9D86507C2F8C2CB700A03D31 /* Chisel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Chisel.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9D8650902F8C2D5200A03D31 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
 		9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		9DFE00202F92763800C4F91C /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -53,7 +51,6 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				9DF34F2330000E8D008FEF55 /* Chisel in Frameworks */,
-				9D8650912F8C2D5200A03D31 /* libiconv.tbd in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -65,7 +62,6 @@
 				9DFE00202F92763800C4F91C /* .swiftlint.yml */,
 				9DDE60EB2F8CE4CA001CA9A1 /* Localizable.xcstrings */,
 				9DAF63452F8C3D1600B87EE5 /* ChiselSwift */,
-				9D86508F2F8C2D5200A03D31 /* Frameworks */,
 				9D86507D2F8C2CB700A03D31 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -76,14 +72,6 @@
 				9D86507C2F8C2CB700A03D31 /* Chisel.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		9D86508F2F8C2D5200A03D31 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				9D8650902F8C2D5200A03D31 /* libiconv.tbd */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
