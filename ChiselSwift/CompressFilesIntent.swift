@@ -55,45 +55,50 @@ struct CompressFilesIntent: AppIntent {
             outputDirectory: nil
         )
 
-        // 4. safely copy shortcut files to temp directory
+        // 4. safely copy shortcut files to temp directory; a file without a working copy is passed through as it came
         let tempDirectory = FileManager.default.temporaryDirectory
-        var workingUrls: [URL] = []
+        var jobs: [(input: IntentFile, workingCopy: URL?)] = []
 
         for intentFile in files {
-            guard let originalURL = intentFile.fileURL else { continue }
             // Use a unique UUID folder to prevent name collisions if multiple files have the same name
             let uniqueFolder = tempDirectory.appendingPathComponent(UUID().uuidString)
-            try? FileManager.default.createDirectory(at: uniqueFolder, withIntermediateDirectories: true)
-            let destURL = uniqueFolder.appendingPathComponent(originalURL.lastPathComponent)
-
-            try? FileManager.default.copyItem(at: originalURL, to: destURL)
-            workingUrls.append(destURL)
+            let destURL = uniqueFolder.appendingPathComponent(intentFile.fileURL?.lastPathComponent ?? intentFile.filename)
+            do {
+                try FileManager.default.createDirectory(at: uniqueFolder, withIntermediateDirectories: true)
+                if let originalURL = intentFile.fileURL {
+                    let accessing = originalURL.startAccessingSecurityScopedResource()
+                    defer { if accessing { originalURL.stopAccessingSecurityScopedResource() } }
+                    try FileManager.default.copyItem(at: originalURL, to: destURL)
+                } else {
+                    // shortcuts can hand over files that only exist as data
+                    try intentFile.data.write(to: destURL)
+                }
+                jobs.append((intentFile, destURL))
+            } catch {
+                print("INTENT: CAN'T PREPARE \(intentFile.filename): \(error)")
+                jobs.append((intentFile, nil))
+            }
         }
+        let workingUrls = jobs.compactMap(\.workingCopy)
 
         // 5. execute processing
-        var outputFiles: [IntentFile] = []
-
         let stream = await chisel.process(files: workingUrls)
         for await event in stream {
             switch event {
             // a container's own recompression is followed by its final rebuild, which reports the result
-            case .finish(let path, let before, let after, _, _, let isContainer) where !isContainer:
+            case .finish(let path, let before, let after, _, _, let isContainer) where !isContainer && after < before:
                 let url = URL(fileURLWithPath: path)
 
-                // only export and track the root requested files, ignoring internal extracted files
+                // only track the root requested files, ignoring internal extracted files
                 if workingUrls.contains(where: { $0.path == url.path }) {
-                    outputFiles.append(IntentFile(fileURL: url))
-
-                    if after < before {
-                        let duration = Date().timeIntervalSince(startTime)
-                        let stat = CompressionStat(
-                            fileExtension: url.pathExtension,
-                            originalSize: Int64(before),
-                            compressedSize: Int64(after),
-                            durationSeconds: duration
-                        )
-                        context.insert(stat)
-                    }
+                    let duration = Date().timeIntervalSince(startTime)
+                    let stat = CompressionStat(
+                        fileExtension: url.pathExtension,
+                        originalSize: Int64(before),
+                        compressedSize: Int64(after),
+                        durationSeconds: duration
+                    )
+                    context.insert(stat)
                 }
             default:
                 break
@@ -102,7 +107,11 @@ struct CompressFilesIntent: AppIntent {
 
         try context.save()
 
-        // returning output files allows chaining actions in the shortcut app
+        // every input comes out, in order: chisel only replaces a working copy it made smaller, so files it
+        // skipped, couldn't improve or failed on come out unchanged, and the shortcut can go on with all of them
+        let outputFiles = jobs.map { job in
+            job.workingCopy.map { IntentFile(fileURL: $0) } ?? job.input
+        }
         return .result(value: outputFiles)
     }
 }
