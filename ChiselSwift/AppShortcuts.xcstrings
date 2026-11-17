@@ -1,0 +1,32 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Compress files with ${applicationName}" : {
+      "comment" : "Siri phrases to run the Compress with Chisel shortcut.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Compress files with ${applicationName}",
+              "Run ${applicationName}",
+              "Squeeze files using ${applicationName}"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Comprimi i file con ${applicationName}",
+              "Avvia ${applicationName}",
+              "Riduci i file con ${applicationName}"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

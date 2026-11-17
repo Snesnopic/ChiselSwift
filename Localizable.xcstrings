@@ -19,8 +19,26 @@
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
+                  "state" : "translated",
                   "value" : "%lld files inside"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld file all'interno"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld file all'interno"
                 }
               }
             }
@@ -29,43 +47,177 @@
       }
     },
     "%lld unsupported files skipped" : {
-      "comment" : "Message summarizing how many unsupported files were automatically skipped."
-    },
-    "•" : {
-      "comment" : "A bullet point character used as a visual separator in the UI."
+      "comment" : "Message summarizing how many unsupported files were automatically skipped.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unsupported file skipped"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unsupported files skipped"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld file non supportato ignorato"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld file non supportati ignorati"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "About" : {
-      "comment" : "Navigation title for the 'About' section containing app information."
+      "comment" : "Navigation title for the 'About' section containing app information.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informazioni"
+          }
+        }
+      }
     },
     "About Chisel" : {
-      "comment" : "Button text to open the native macOS 'About' window."
+      "comment" : "Button text to open the native macOS 'About' window.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informazioni su Chisel"
+          }
+        }
+      }
     },
     "Active threads" : {
-      "comment" : "Settings label for configuring the number of concurrent processing threads."
+      "comment" : "Settings label for configuring the number of concurrent processing threads.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thread attivi"
+          }
+        }
+      }
     },
     "Add Files" : {
-      "comment" : "Button label to open the file picker dialog."
+      "comment" : "Button label to open the file picker dialog.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi file"
+          }
+        }
+      }
     },
-    "Alongside original (a-compressed.pdf)" : {
-      "comment" : "Output mode option to save the compressed file in the same directory, appending '-compressed' to the filename."
+    "Alongside original (a.compressed.pdf)" : {
+      "comment" : "Output mode option to save the compressed file next to the original, as name.compressed.ext.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accanto all'originale (a.compressed.pdf)"
+          }
+        }
+      }
     },
     "Amount of iterations of the zopfli algorithm on deflate files (pngs, pdfs, archives)." : {
-      "comment" : "Description text for the Zopfli iterations slider."
+      "comment" : "Description text for the Zopfli iterations slider.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numero di iterazioni dell'algoritmo zopfli sui file deflate (PNG, PDF, archivi)."
+          }
+        }
+      }
     },
     "App icon by " : {
-      "comment" : "Prefix text for attributing the app icon designer."
+      "comment" : "Prefix text for attributing the app icon designer.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icona dell'app di "
+          }
+        }
+      }
     },
     "Archive" : {
-      "comment" : "Category name for archive file formats (e.g., zip, tar)."
+      "comment" : "Category name for archive file formats (e.g., zip, tar).",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivio"
+          }
+        }
+      }
     },
     "Audio" : {
-      "comment" : "Category name for audio file formats (e.g., mp3, wav)."
+      "comment" : "Category name for audio file formats (e.g., mp3, wav).",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio"
+          }
+        }
+      }
     },
     "Automate with Shortcuts" : {
-      "comment" : "Title for the section explaining Apple Shortcuts integration."
+      "comment" : "Title for the section explaining Apple Shortcuts integration.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatizza con Comandi"
+          }
+        }
+      }
+    },
+    "Biggest save" : {
+      "comment" : "Statistics card title: the largest amount of space saved on a single file.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Risparmio maggiore"
+          }
+        }
+      }
     },
     "Cancel" : {
-      "comment" : "Standard button label to cancel the current operation."
+      "comment" : "Standard button label to cancel the current operation.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulla"
+          }
+        }
+      }
     },
     "Chisel" : {
       "comment" : "The application name. Do not translate.",
@@ -76,277 +228,1139 @@
       "shouldTranslate" : false
     },
     "Chisel engine" : {
-      "comment" : "Link text pointing to the Chisel C++ engine repository."
+      "comment" : "Link text pointing to the Chisel C++ engine repository.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Motore Chisel"
+          }
+        }
+      }
     },
     "Chisel GUI" : {
-      "comment" : "Link text pointing to the ChiselSwift macOS repository."
+      "comment" : "Link text pointing to the ChiselSwift macOS repository.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GUI di Chisel"
+          }
+        }
+      }
     },
     "Chisel provides App Intents to compress your files silently in the background or right from the Finder context menu." : {
-      "comment" : "Description of the Apple Shortcuts and Finder integration capabilities."
+      "comment" : "Description of the Apple Shortcuts and Finder integration capabilities.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chisel offre azioni per Comandi con cui comprimere i file in background o direttamente dal menu contestuale del Finder."
+          }
+        }
+      }
+    },
+    "Choose where to save the log file" : {
+      "comment" : "Message of the save panel used to export logs.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli dove salvare il file di log"
+          }
+        }
+      }
     },
     "Clear" : {
-      "comment" : "Button label to clear a single item or a selection."
+      "comment" : "Button label to clear a single item or a selection.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi"
+          }
+        }
+      }
     },
     "Clear all" : {
-      "comment" : "Button label to remove all files from the processing list."
+      "comment" : "Button label to remove all files from the processing list.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi tutto"
+          }
+        }
+      }
     },
     "Come back when you'll have compressed some files!" : {
-      "comment" : "Empty state text in the statistics view when no data is available."
+      "comment" : "Empty state text in the statistics view when no data is available.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Torna qui dopo aver compresso qualche file!"
+          }
+        }
+      }
     },
     "Compress" : {
-      "comment" : "Navigation label for the main compression tab."
+      "comment" : "Navigation label for the main compression tab.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprimi"
+          }
+        }
+      }
     },
     "Compress ${files}" : {
-      "comment" : "Siri Shortcut parameter description for compressing specific files."
+      "comment" : "Siri Shortcut parameter description for compressing specific files.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprimi ${files}"
+          }
+        }
+      }
     },
     "Compress files" : {
-      "comment" : "Title for the file compression Siri Shortcut."
+      "comment" : "Title for the file compression Siri Shortcut.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprimi file"
+          }
+        }
+      }
     },
     "Compress with Chisel" : {
-      "comment" : "Title of the Quick Action available in the Finder context menu."
+      "comment" : "Title of the Quick Action available in the Finder context menu.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprimi con Chisel"
+          }
+        }
+      }
     },
     "Compresses the provided files using the Chisel engine." : {
-      "comment" : "Detailed description of the Siri Shortcut action."
+      "comment" : "Detailed description of the Siri Shortcut action.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprime i file forniti con il motore Chisel."
+          }
+        }
+      }
     },
     "Copyright © 2026 Snesnopic" : {
-      "comment" : "Copyright notice in the About screen."
+      "comment" : "Copyright notice in the About screen.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copyright © 2026 Snesnopic"
+          }
+        }
+      }
+    },
+    "Creates a separate copy of the compressed file alongside the original." : {
+      "comment" : "Description of the 'Alongside original' output mode.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea una copia compressa separata accanto all'originale."
+          }
+        }
+      }
     },
     "Custom output folder" : {
-      "comment" : "Output mode option allowing the user to select a specific directory for compressed files."
+      "comment" : "Output mode option allowing the user to select a specific directory for compressed files.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cartella di destinazione personalizzata"
+          }
+        }
+      }
     },
     "Database" : {
-      "comment" : "Category name for database file formats."
+      "comment" : "Category name for database file formats.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Database"
+          }
+        }
+      }
     },
     "Delete" : {
-      "comment" : "Context menu action to delete a file from the list."
+      "comment" : "Context menu action to delete a file from the list.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina"
+          }
+        }
+      }
     },
     "Destination:" : {
-      "comment" : "Label prompting the user to select an output directory."
+      "comment" : "Label prompting the user to select an output directory.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destinazione:"
+          }
+        }
+      }
+    },
+    "Digitally signed files (signed PDFs and Office documents, app packages, signed executables, photos with content credentials) are skipped by default. Optimizing them invalidates their signature." : {
+      "comment" : "Explanation of the 'Optimize signed files' setting.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I file con firma digitale (PDF e documenti Office firmati, pacchetti di app, eseguibili firmati, foto con credenziali di contenuto) vengono saltati per impostazione predefinita. Ottimizzarli ne invalida la firma."
+          }
+        }
+      }
     },
     "Document" : {
-      "comment" : "Category name for document file formats (e.g., pdf, docx)."
+      "comment" : "Category name for document file formats (e.g., pdf, docx).",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento"
+          }
+        }
+      }
     },
     "Documents" : {
-      "comment" : "Plural category name for document file formats."
+      "comment" : "Plural category name for document file formats.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documenti"
+          }
+        }
+      }
     },
     "Drag and drop files here, or use the add button to start compressing." : {
-      "comment" : "Empty state instruction in the main file list."
+      "comment" : "Empty state instruction in the main file list.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascina qui i file, oppure usa il pulsante Aggiungi per iniziare a comprimere."
+          }
+        }
+      }
     },
     "Expand for fine-tuning some compression related parameters. Incorrectly set values severely degrade performance." : {
-      "comment" : "Header description for the advanced settings section."
+      "comment" : "Header description for the advanced settings section.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espandi per regolare alcuni parametri di compressione. Valori impostati male peggiorano molto le prestazioni."
+          }
+        }
+      }
     },
     "Export current logs to .txt" : {
-      "comment" : "Tooltip or detailed description for the log export button."
+      "comment" : "Tooltip or detailed description for the log export button.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta i log attuali in un file .txt"
+          }
+        }
+      }
     },
     "Export logs" : {
-      "comment" : "Menu item or button label to export logs to a file."
+      "comment" : "Menu item or button label to export logs to a file.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta log"
+          }
+        }
+      }
     },
     "Export Logs" : {
-      "comment" : "Button label to trigger the log export process."
+      "comment" : "Button label to trigger the log export process.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta log"
+          }
+        }
+      }
     },
     "Files" : {
-      "comment" : "Sidebar or section title for the file queue."
+      "comment" : "Sidebar or section title for the file queue.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File"
+          }
+        }
+      }
     },
     "Font" : {
-      "comment" : "Category name for font file formats (e.g., ttf, otf)."
+      "comment" : "Category name for font file formats (e.g., ttf, otf).",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Font"
+          }
+        }
+      }
     },
     "format" : {
-      "comment" : "Label for the 'format' axis in the statistics chart."
+      "comment" : "Label for the 'format' axis in the statistics chart.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "formato"
+          }
+        }
+      }
     },
     "Format" : {
-      "comment" : "Column header or label denoting the file type format."
+      "comment" : "Column header or label denoting the file type format.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato"
+          }
+        }
+      }
     },
     "General options" : {
-      "comment" : "Section header for general application settings."
+      "comment" : "Section header for general application settings.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opzioni generali"
+          }
+        }
+      }
     },
     "Global logs" : {
-      "comment" : "Header for the view displaying aggregated logs from all files."
+      "comment" : "Header for the view displaying aggregated logs from all files.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log generali"
+          }
+        }
+      }
+    },
+    "Grant access to '%@'" : {
+      "comment" : "Message of the folder picker asking access to a folder; %@ is the folder name.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consenti l'accesso a '%@'"
+          }
+        }
+      }
+    },
+    "Grant access to this folder" : {
+      "comment" : "Message of the folder picker asking access to a folder whose name is unknown.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consenti l'accesso a questa cartella"
+          }
+        }
+      }
     },
     "Hide unsupported subfiles" : {
-      "comment" : "Settings toggle to hide internal subfiles that cannot be compressed."
+      "comment" : "Settings toggle to hide internal subfiles that cannot be compressed.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nascondi i file interni non supportati"
+          }
+        }
+      }
     },
     "How many files to process in parallel. More threads will use more CPU but can also make the system unresponsive until all files are processed." : {
-      "comment" : "Detailed explanation of the 'Active threads' setting."
+      "comment" : "Detailed explanation of the 'Active threads' setting.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanti file elaborare in parallelo. Più thread usano più CPU, ma possono rendere il sistema poco reattivo finché l'elaborazione non è finita."
+          }
+        }
+      }
     },
     "Image" : {
-      "comment" : "Category name for image file formats (e.g., png, jpg)."
+      "comment" : "Category name for image file formats (e.g., png, jpg).",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immagine"
+          }
+        }
+      }
     },
     "Importing files..." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importazione dei file…"
+          }
+        }
+      }
     },
     "Inspector" : {
-      "comment" : "Button to toggle the side inspector panel showing file details."
+      "comment" : "Button to toggle the side inspector panel showing file details.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inspector"
+          }
+        }
+      }
     },
     "Iterations" : {
-      "comment" : "Label for the Zopfli iterations setting."
+      "comment" : "Label for the Zopfli iterations setting.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iterazioni"
+          }
+        }
+      }
     },
     "Iterations on large files" : {
-      "comment" : "Label for the Zopfli iterations setting specifically applied to large files."
+      "comment" : "Label for the Zopfli iterations setting specifically applied to large files.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iterazioni sui file grandi"
+          }
+        }
+      }
     },
     "Keeps EXIF, XMP, color profiles, and timestamps. Disabling this yields slightly better compression but strips most non-essential data." : {
-      "comment" : "Detailed explanation of the 'Preserve metadata' setting."
+      "comment" : "Detailed explanation of the 'Preserve metadata' setting.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantiene EXIF, XMP, profili colore e date. Disattivandolo si ottiene una compressione leggermente migliore, ma si rimuove gran parte dei dati non essenziali."
+          }
+        }
+      }
+    },
+    "Largest" : {
+      "comment" : "Statistics card title: the size of the largest file processed.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File più grande"
+          }
+        }
+      }
     },
     "Mahary Esposito" : {
-      "comment" : "Name of the app icon designer. Do not translate."
+      "comment" : "Name of the app icon designer. Do not translate.",
+      "shouldTranslate" : false
     },
     "Many container files, such as PDFs, contain a lot of internal files that can't be processed. This option hides these files." : {
-      "comment" : "Detailed explanation of the 'Hide unsupported subfiles' setting."
+      "comment" : "Detailed explanation of the 'Hide unsupported subfiles' setting.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Molti file contenitore, come i PDF, contengono numerosi file interni che non si possono elaborare. Questa opzione li nasconde."
+          }
+        }
+      }
+    },
+    "New size" : {
+      "comment" : "File inspector row: size of the file after compression.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuova dimensione"
+          }
+        }
+      }
     },
     "No files selected" : {
-      "comment" : "Empty state message when no files are selected in the list."
+      "comment" : "Empty state message when no files are selected in the list.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun file selezionato"
+          }
+        }
+      }
     },
     "No log data available" : {
-      "comment" : "Message shown when a specific file has no processing logs."
+      "comment" : "Message shown when a specific file has no processing logs.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun log disponibile"
+          }
+        }
+      }
     },
     "No logs generated yet" : {
-      "comment" : "Message shown when the global log console is empty."
+      "comment" : "Message shown when the global log console is empty.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancora nessun log"
+          }
+        }
+      }
     },
     "No selection" : {
-      "comment" : "Inspector title when nothing is selected."
+      "comment" : "Inspector title when nothing is selected.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna selezione"
+          }
+        }
+      }
     },
     "No statistics yet" : {
-      "comment" : "Header in the statistics view when no files have been compressed."
+      "comment" : "Header in the statistics view when no files have been compressed.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancora nessuna statistica"
+          }
+        }
+      }
     },
     "On My iPhone" : {
-      "comment" : "Location identifier for local iOS storage."
+      "comment" : "Location identifier for local iOS storage.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sul mio iPhone"
+          }
+        }
+      }
+    },
+    "Optimize signed files" : {
+      "comment" : "Settings toggle to optimize digitally signed files too, invalidating their signatures.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ottimizza i file firmati"
+          }
+        }
+      }
+    },
+    "Original size" : {
+      "comment" : "File inspector row: size of the file before compression.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensione originale"
+          }
+        }
+      }
     },
     "Output mode" : {
-      "comment" : "Settings label for choosing where compressed files are saved."
+      "comment" : "Settings label for choosing where compressed files are saved.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modalità di salvataggio"
+          }
+        }
+      }
     },
     "Overwrite" : {
-      "comment" : "Output mode option that replaces the original file with the compressed one."
+      "comment" : "Output mode option that replaces the original file with the compressed one.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sovrascrivi"
+          }
+        }
+      }
     },
     "Perform an extra check after each compression to ensure the content of the modified file perfectly matches the original file. Guarantees that your files don't degrade in quality, but makes processing slower." : {
-      "comment" : "Detailed explanation of the 'Verify data integrity' setting."
+      "comment" : "Detailed explanation of the 'Verify data integrity' setting.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esegue un controllo aggiuntivo dopo ogni compressione per assicurarsi che il contenuto del file modificato corrisponda esattamente all'originale. Garantisce che i file non perdano qualità, ma rallenta l'elaborazione."
+          }
+        }
+      }
     },
     "Permission required" : {
-      "comment" : "Alert title requesting filesystem access permissions."
+      "comment" : "Alert title requesting filesystem access permissions.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorizzazione necessaria"
+          }
+        }
+      }
     },
     "Please select a default output folder for your compressed files." : {
-      "comment" : "Prompt asking the user to pick a custom output directory."
+      "comment" : "Prompt asking the user to pick a custom output directory.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona una cartella di destinazione predefinita per i file compressi."
+          }
+        }
+      }
     },
     "Preserve file metadata" : {
-      "comment" : "Settings toggle to keep metadata like EXIF and timestamps."
+      "comment" : "Settings toggle to keep metadata like EXIF and timestamps.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantieni i metadati dei file"
+          }
+        }
+      }
     },
     "Preview unavailable" : {
-      "comment" : "Placeholder text when a visual preview of a file cannot be generated."
+      "comment" : "Placeholder text when a visual preview of a file cannot be generated.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anteprima non disponibile"
+          }
+        }
+      }
     },
     "Process log" : {
-      "comment" : "Header for the log output of a specific file."
+      "comment" : "Header for the log output of a specific file.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log di elaborazione"
+          }
+        }
+      }
     },
     "Recursive folder import" : {
-      "comment" : "Settings toggle to allow importing files from nested subdirectories."
+      "comment" : "Settings toggle to allow importing files from nested subdirectories.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importazione ricorsiva delle cartelle"
+          }
+        }
+      }
     },
-    "Rename original (a-original.pdf)" : {
-      "comment" : "Output mode option to keep both files, renaming the original file."
+    "Rename original (a.original.pdf)" : {
+      "comment" : "Output mode option that renames the original to name.original.ext and puts the compressed file in its place.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rinomina l'originale (a.original.pdf)"
+          }
+        }
+      }
+    },
+    "Renames the original file and saves the compressed version in its place." : {
+      "comment" : "Description of the 'Rename original' output mode.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rinomina il file originale e salva la versione compressa al suo posto."
+          }
+        }
+      }
+    },
+    "Replaces the original files with the compressed versions. This action is destructive." : {
+      "comment" : "Description of the 'Overwrite' output mode.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sostituisce i file originali con le versioni compresse. L'operazione non si può annullare."
+          }
+        }
+      }
     },
     "Reset advanced parameters to defaults" : {
-      "comment" : "Button label to restore default advanced settings."
+      "comment" : "Button label to restore default advanced settings.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina i parametri avanzati predefiniti"
+          }
+        }
+      }
     },
     "Reveal in Finder" : {
-      "comment" : "Context menu action to open the file's location in macOS Finder."
+      "comment" : "Context menu action to open the file's location in macOS Finder.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra nel Finder"
+          }
+        }
+      }
     },
     "saved" : {
-      "comment" : "Label indicating the amount of storage space saved."
+      "comment" : "Label indicating the amount of storage space saved.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "risparmiati"
+          }
+        }
+      }
     },
     "Saved: %@" : {
-      "comment" : "Formatted string showing the total bytes saved (e.g., 'Saved: 15 MB')."
+      "comment" : "Formatted string showing the total bytes saved (e.g., 'Saved: 15 MB').",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Risparmiati: %@"
+          }
+        }
+      }
+    },
+    "Saves the compressed files into the selected destination directory, leaving originals intact." : {
+      "comment" : "Description of the 'Custom output folder' output mode.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva i file compressi nella cartella di destinazione scelta, lasciando intatti gli originali."
+          }
+        }
+      }
     },
     "Savings by format" : {
-      "comment" : "Chart title displaying compression savings broken down by file type."
+      "comment" : "Chart title displaying compression savings broken down by file type.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Risparmio per formato"
+          }
+        }
+      }
     },
     "Scientific" : {
-      "comment" : "Category name for scientific file formats."
+      "comment" : "Category name for scientific file formats.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scientifico"
+          }
+        }
+      }
     },
     "Select a section from the sidebar" : {
-      "comment" : "Empty state message for the split view detail pane."
+      "comment" : "Empty state message for the split view detail pane.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona una sezione dalla barra laterale"
+          }
+        }
+      }
     },
     "Select folder" : {
-      "comment" : "Button label to pick a directory."
+      "comment" : "Button label to pick a directory.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona cartella"
+          }
+        }
+      }
+    },
+    "Select the output directory for compressed files" : {
+      "comment" : "Message of the folder picker for the output folder.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona la cartella di destinazione per i file compressi"
+          }
+        }
+      }
     },
     "Settings" : {
-      "comment" : "Navigation label for the app preferences."
+      "comment" : "Navigation label for the app preferences.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impostazioni"
+          }
+        }
+      }
     },
     "Settings are locked while processing. Any changes will be applied to the next batch." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durante l'elaborazione le impostazioni sono bloccate. Eventuali modifiche verranno applicate alla prossima elaborazione."
+          }
+        }
+      }
     },
     "Show advanced compression parameters" : {
-      "comment" : "Toggle label to reveal advanced settings."
+      "comment" : "Toggle label to reveal advanced settings.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra i parametri di compressione avanzati"
+          }
+        }
+      }
     },
     "Simulate only (Dry Run)" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo simulazione (dry run)"
+          }
+        }
+      }
     },
     "Start" : {
-      "comment" : "Button label to begin the compression process."
+      "comment" : "Button label to begin the compression process.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvia"
+          }
+        }
+      }
     },
     "Start processing" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvia elaborazione"
+          }
+        }
+      }
     },
     "Statistics" : {
-      "comment" : "Navigation label for the app usage statistics."
+      "comment" : "Navigation label for the app usage statistics.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statistiche"
+          }
+        }
+      }
     },
     "Stop" : {
-      "comment" : "Button label to halt the compression process."
+      "comment" : "Button label to halt the compression process.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interrompi"
+          }
+        }
+      }
     },
     "Stop processing" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interrompi elaborazione"
+          }
+        }
+      }
     },
     "Stopping threads..." : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interruzione dei thread…"
+          }
+        }
+      }
     },
     "Supported formats" : {
-      "comment" : "Section title listing all file extensions the app can compress."
+      "comment" : "Section title listing all file extensions the app can compress.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formati supportati"
+          }
+        }
+      }
     },
     "Supported formats (%lld)" : {
-      "comment" : "Section title listing the total count of supported file extensions."
+      "comment" : "Section title listing the total count of supported file extensions.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formati supportati (%lld)"
+          }
+        }
+      }
     },
     "System resources" : {
-      "comment" : "Section header for CPU and memory usage settings."
+      "comment" : "Section header for CPU and memory usage settings.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Risorse di sistema"
+          }
+        }
+      }
     },
     "Tap to preview" : {
-
+      "comment" : "Caption on the file preview placeholder; tapping it opens Quick Look.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocca per l'anteprima"
+          }
+        }
+      }
     },
     "The temporary file has been cleaned up by the system." : {
-      "comment" : "Error message when a working file is unexpectedly deleted by the OS."
+      "comment" : "Error message when a working file is unexpectedly deleted by the OS.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il file temporaneo è stato eliminato dal sistema."
+          }
+        }
+      }
     },
     "To save files alongside the originals, Chisel needs permission to access '%@'. Please select it in the next screen to grant access." : {
-      "comment" : "Explanation text in the security bookmark permission dialog."
+      "comment" : "Explanation text in the security bookmark permission dialog.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per salvare i file accanto agli originali, Chisel deve poter accedere a '%@'. Selezionala nella prossima schermata per consentire l'accesso."
+          }
+        }
+      }
     },
     "Total space saved" : {
-      "comment" : "Header displaying the cumulative storage saved across all sessions."
+      "comment" : "Header displaying the cumulative storage saved across all sessions.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spazio totale risparmiato"
+          }
+        }
+      }
     },
     "Unknown" : {
-      "comment" : "Category name for unrecognized file formats."
+      "comment" : "Category name for unrecognized file formats.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sconosciuto"
+          }
+        }
+      }
     },
     "Unsupported" : {
-      "comment" : "Status label for a file format that cannot be compressed."
+      "comment" : "Status label for a file format that cannot be compressed.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non supportato"
+          }
+        }
+      }
     },
     "Use the add button to select files to compress." : {
-      "comment" : "Instructional text pointing to the add files button."
+      "comment" : "Instructional text pointing to the add files button.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa il pulsante Aggiungi per selezionare i file da comprimere."
+          }
+        }
+      }
     },
     "Verify data integrity" : {
-      "comment" : "Settings toggle to enable post-compression checksum verification."
+      "comment" : "Settings toggle to enable post-compression checksum verification.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica l'integrità dei dati"
+          }
+        }
+      }
     },
     "Version %@" : {
-      "comment" : "Label displaying the app version number."
+      "comment" : "Label displaying the app version number.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versione %@"
+          }
+        }
+      }
     },
     "Video" : {
-      "comment" : "Category name for video file formats (e.g., mp4, mkv)."
+      "comment" : "Category name for video file formats (e.g., mp4, mkv).",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video"
+          }
+        }
+      }
     },
     "View error details" : {
-      "comment" : "Button label to expand and read the full error message."
+      "comment" : "Button label to expand and read the full error message.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra i dettagli dell'errore"
+          }
+        }
+      }
     },
     "Warning: high iteration count massively increases computational overhead." : {
-      "comment" : "Warning message when the user sets a very high Zopfli iteration count."
+      "comment" : "Warning message when the user sets a very high Zopfli iteration count.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attenzione: un numero alto di iterazioni aumenta enormemente il carico di calcolo."
+          }
+        }
+      }
     },
     "Warning: using all threads of your system will make it unresponsive!" : {
-      "comment" : "Warning message when the user dedicates all CPU threads to compression."
+      "comment" : "Warning message when the user dedicates all CPU threads to compression.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attenzione: usare tutti i thread del sistema lo renderà poco reattivo!"
+          }
+        }
+      }
     },
     "When importing a folder, all files in subfolders will be added." : {
-      "comment" : "Detailed explanation of the 'Recursive folder import' setting."
+      "comment" : "Detailed explanation of the 'Recursive folder import' setting.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importando una cartella, verranno aggiunti anche tutti i file nelle sottocartelle."
+          }
+        }
+      }
     },
     "Zopfli / Deflate" : {
-      "comment" : "Header for settings related to the Zopfli and Deflate compression algorithms."
+      "comment" : "Header for settings related to the Zopfli and Deflate compression algorithms.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zopfli / Deflate"
+          }
+        }
+      }
+    },
+    "•" : {
+      "comment" : "A bullet point character used as a visual separator in the UI.",
+      "shouldTranslate" : false
     }
   },
   "version" : "1.2"
