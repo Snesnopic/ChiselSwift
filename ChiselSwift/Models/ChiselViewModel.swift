@@ -432,14 +432,16 @@ final class ChiselViewModel {
                 let parentHint = parentContainer ?? Self.extractionFolder(of: path).flatMap { extractionFolderParents[$0] }
                 let lowerReason = reason.lowercased()
                 let isNoGain = lowerReason.contains("no gain") || lowerReason.contains("size")
-                // signed files are supported, just deliberately left alone: keep them visible
-                let shouldHideChild = hideUnsupported && !isNoGain && !isSigned
+                // a stop interrupts every running task, each reporting it as a skip
+                let isInterrupted = lowerReason == "interrupted"
+                // signed and interrupted files are supported, just left alone: keep them visible
+                let shouldHideChild = hideUnsupported && !isNoGain && !isSigned && !isInterrupted
 
                 // create child UI node only if it's a "no gain" skip. Otherwise, discard it entirely.
                 updateItem(for: path, createIfNeeded: !shouldHideChild, parentHint: parentHint) { parent, child, isRoot in
                     let targetName = URL(fileURLWithPath: path).lastPathComponent
-                    let skipMsg = "SKIPPED [\(targetName)]: \(reason)"
-                    let computedStatus: FileItem.ProcessingStatus = isNoGain ? .noGain : .skipped
+                    let skipMsg = isInterrupted ? "INTERRUPTED [\(targetName)]" : "SKIPPED [\(targetName)]: \(reason)"
+                    let computedStatus: FileItem.ProcessingStatus = isInterrupted ? .stopped : (isNoGain ? .noGain : .skipped)
 
                     if isRoot {
                         parent.status = computedStatus
@@ -551,7 +553,7 @@ final class ChiselViewModel {
                 if nodes[i].children != nil {
                     traverseAndMark(nodes: &nodes[i].children!)
 
-                    // containers are rebuilt (Phase 3) only after every file finishes Phase 2,
+                    // a container is rebuilt (Phase 3) only once everything inside it is done,
                     // inner ones before outer ones, so a stop can leave descendants that finished
                     // looking "done" (even a rebuilt inner container) while the container that
                     // was supposed to embed them never got rebuilt. Their results only exist
