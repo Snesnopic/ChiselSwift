@@ -13,8 +13,20 @@ struct CompressFilesIntent: AppIntent, ProgressReportingIntent {
     @Parameter(title: "Files", supportedTypeIdentifiers: ["public.item"])
     var files: [IntentFile]
 
+    /// Where the compressed files go.
+    @Parameter(title: "Save Mode", default: .appSetting)
+    var saveMode: CompressionSaveMode
+
+    /// Destination when saving in a folder.
+    @Parameter(title: "Folder", supportedTypeIdentifiers: ["public.folder"])
+    var folder: IntentFile?
+
     static var parameterSummary: some ParameterSummary {
-        Summary("Compress \(\.$files)")
+        When(\.$saveMode, .equalTo, .folder) {
+            Summary("Compress \(\.$files) and save them in \(\.$folder)")
+        } otherwise: {
+            Summary("Compress \(\.$files) and \(\.$saveMode)")
+        }
     }
 
     func perform() async throws -> some IntentResult & ReturnsValue<[IntentFile]> {
@@ -25,6 +37,31 @@ struct CompressFilesIntent: AppIntent, ProgressReportingIntent {
 
         // 1. read preferences matching @appstorage keys
         let defaults = UserDefaults.standard
+
+        // where compressed files go: nil keeps them as copies, handed back to the shortcut
+        let outputMode: OutputMode?
+        var destinationFolder: URL?
+        switch saveMode {
+        case .returnCopy:
+            outputMode = nil
+        case .overwrite:
+            outputMode = .overwrite
+        case .sideBySide:
+            outputMode = .sideBySide
+        case .keepOriginal:
+            outputMode = .keepOriginal
+        case .folder:
+            guard let folderURL = folder?.fileURL else { throw $folder.needsValueError() }
+            outputMode = .outputFolder
+            destinationFolder = folderURL
+        case .appSetting:
+            let appMode = defaults.string(forKey: "outputMode").flatMap(OutputMode.init(rawValue:)) ?? .keepOriginal
+            outputMode = appMode
+            if appMode == .outputFolder {
+                destinationFolder = defaults.data(forKey: "outputFolderBookmark").flatMap(OutputMode.resolveOutputFolder)?.url
+                guard destinationFolder != nil else { throw CompressFilesIntentError.noOutputFolder }
+            }
+        }
         let iterations = UInt32(defaults.integer(forKey: "iterations") == 0 ? 15 : defaults.integer(forKey: "iterations"))
         let iterationsLarge = UInt32(defaults.integer(forKey: "iterationsLarge") == 0 ? 5 : defaults.integer(forKey: "iterationsLarge"))
         let threads = UInt32(defaults.integer(forKey: "threads") == 0 ? 4 : defaults.integer(forKey: "threads"))
@@ -80,6 +117,7 @@ struct CompressFilesIntent: AppIntent, ProgressReportingIntent {
         var analyzed: Set<String> = []
         var settled: Set<String> = []
         var analysisFinished = false
+        var improved: Set<String> = []
 
         func reportProgress() {
             progress.localizedAdditionalDescription = String(localized: "\(analyzed.count - settled.count) files left")
@@ -109,6 +147,7 @@ struct CompressFilesIntent: AppIntent, ProgressReportingIntent {
 
                 // only track the root requested files, ignoring internal extracted files
                 if after < before, workingUrls.contains(where: { $0.path == url.path }) {
+                    improved.insert(url.path)
                     let duration = Date().timeIntervalSince(startTime)
                     let stat = CompressionStat(
                         fileExtension: url.pathExtension,
@@ -130,12 +169,68 @@ struct CompressFilesIntent: AppIntent, ProgressReportingIntent {
 
         try context.save()
 
-        // every input comes out, in order: chisel only replaces a working copy it made smaller, so files it
-        // skipped, couldn't improve or failed on come out unchanged, and the shortcut can go on with all of them
-        let outputFiles = jobs.map { job in
-            job.workingCopy.map { IntentFile(fileURL: $0) } ?? job.input
+        // every input comes out, in order, so the shortcut can go on with all of them: files chisel skipped,
+        // couldn't improve or failed on as they came, the others where the save mode put them
+        var outputFiles: [IntentFile] = []
+        var failures: [String] = []
+        for job in jobs {
+            guard let workingCopy = job.workingCopy, improved.contains(workingCopy.path) else {
+                outputFiles.append(job.input)
+                continue
+            }
+            // files that only came as data have no original to save next to
+            guard let outputMode, let original = job.input.fileURL else {
+                outputFiles.append(IntentFile(fileURL: workingCopy))
+                continue
+            }
+            do {
+                let saved = try outputMode.place(workingCopy, for: original, outputFolder: destinationFolder)
+                outputFiles.append(IntentFile(fileURL: saved))
+            } catch {
+                failures.append("\(original.lastPathComponent): \(error.localizedDescription)")
+                outputFiles.append(IntentFile(fileURL: workingCopy))
+            }
+        }
+        if !failures.isEmpty {
+            throw CompressFilesIntentError.saveFailed(failures.joined(separator: "\n"))
         }
         return .result(value: outputFiles)
+    }
+}
+
+/// Where the Compress with Chisel action puts the compressed files.
+enum CompressionSaveMode: String, AppEnum {
+    case appSetting
+    case returnCopy
+    case overwrite
+    case sideBySide
+    case keepOriginal
+    case folder
+
+    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Save Mode"
+
+    // read after "Compress <files> and ..." in the action's summary
+    static let caseDisplayRepresentations: [CompressionSaveMode: DisplayRepresentation] = [
+        .appSetting: "save them as set in Chisel",
+        .returnCopy: "only return the compressed copies",
+        .overwrite: "overwrite the originals",
+        .sideBySide: "save them next to the originals",
+        .keepOriginal: "rename the originals and take their place",
+        .folder: "save them in a folder"
+    ]
+}
+
+enum CompressFilesIntentError: Error, CustomLocalizedStringResourceConvertible {
+    case noOutputFolder
+    case saveFailed(String)
+
+    var localizedStringResource: LocalizedStringResource {
+        switch self {
+        case .noOutputFolder:
+            return "Chisel's save mode is set to a custom folder, but no folder is selected in its settings."
+        case .saveFailed(let details):
+            return "Chisel compressed the files but couldn't save some of them:\n\(details)"
+        }
     }
 }
 

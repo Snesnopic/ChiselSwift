@@ -279,6 +279,17 @@
       "comment" : "Footnote displaying the version of the underlying libchisel C++ engine.",
       "shouldTranslate" : false
     },
+    "Chisel compressed the files but couldn't save some of them:\n%@" : {
+      "comment" : "Error of the Compress with Chisel action; %@ lists the files and the reasons.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chisel ha compresso i file, ma non è riuscito a salvarne alcuni:\n%@"
+          }
+        }
+      }
+    },
     "Chisel engine" : {
       "comment" : "Link text pointing to the Chisel C++ engine repository.",
       "localizations" : {
@@ -308,6 +319,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chisel offre azioni per Comandi con cui comprimere i file in background o direttamente dal menu contestuale del Finder."
+          }
+        }
+      }
+    },
+    "Chisel's save mode is set to a custom folder, but no folder is selected in its settings." : {
+      "comment" : "Error of the Compress with Chisel action.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Chisel la modalità di salvataggio è impostata su una cartella personalizzata, ma nelle impostazioni non ne è stata scelta nessuna."
           }
         }
       }
@@ -367,13 +389,24 @@
         }
       }
     },
-    "Compress ${files}" : {
-      "comment" : "Siri Shortcut parameter description for compressing specific files.",
+    "Compress ${files} and ${saveMode}" : {
+      "comment" : "Summary of the Compress with Chisel action; ${saveMode} is one of the save mode options.",
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comprimi ${files}"
+            "value" : "Comprimi ${files} e ${saveMode}"
+          }
+        }
+      }
+    },
+    "Compress ${files} and save them in ${folder}" : {
+      "comment" : "Summary of the Compress with Chisel action when saving in a folder.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprimi ${files} e salvali in ${folder}"
           }
         }
       }
@@ -583,6 +616,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "File"
+          }
+        }
+      }
+    },
+    "Folder" : {
+      "comment" : "Shortcuts action parameter: folder to save the compressed files in.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cartella"
           }
         }
       }
@@ -854,6 +898,17 @@
         }
       }
     },
+    "only return the compressed copies" : {
+      "comment" : "Save mode option, read after 'Compress files and'.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "restituisci solo le copie compresse"
+          }
+        }
+      }
+    },
     "Optimize signed files" : {
       "comment" : "Settings toggle to optimize digitally signed files too, invalidating their signatures.",
       "localizations" : {
@@ -894,6 +949,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sovrascrivi"
+          }
+        }
+      }
+    },
+    "overwrite the originals" : {
+      "comment" : "Save mode option, read after 'Compress files and'.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sovrascrivi gli originali"
           }
         }
       }
@@ -986,6 +1052,17 @@
         }
       }
     },
+    "rename the originals and take their place" : {
+      "comment" : "Save mode option, read after 'Compress files and'.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "rinomina gli originali e prendi il loro posto"
+          }
+        }
+      }
+    },
     "Renames the original file and saves the compressed version in its place." : {
       "comment" : "Description of the 'Rename original' output mode.",
       "localizations" : {
@@ -1026,6 +1103,50 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra nel Finder"
+          }
+        }
+      }
+    },
+    "Save Mode" : {
+      "comment" : "Shortcuts action parameter: where the compressed files go.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modalità di salvataggio"
+          }
+        }
+      }
+    },
+    "save them as set in Chisel" : {
+      "comment" : "Save mode option, read after 'Compress files and'.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "salvali come impostato in Chisel"
+          }
+        }
+      }
+    },
+    "save them in a folder" : {
+      "comment" : "Save mode option, read after 'Compress files and'.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "salvali in una cartella"
+          }
+        }
+      }
+    },
+    "save them next to the originals" : {
+      "comment" : "Save mode option, read after 'Compress files and'.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "salvali accanto agli originali"
           }
         }
       }

@@ -80,25 +80,12 @@ final class ChiselViewModel {
             }
         }
     func getOutputFolderURL() -> URL? {
-            guard let data = outputFolderBookmark else { return nil }
-            var isStale = false
-            do {
-                #if os(macOS)
-                let options: URL.BookmarkResolutionOptions = .withSecurityScope
-                #else
-                let options: URL.BookmarkResolutionOptions = []
-                #endif
-
-                let url = try URL(resolvingBookmarkData: data, options: options, relativeTo: nil, bookmarkDataIsStale: &isStale)
-                if isStale {
-                    saveBookmark(for: url)
-                }
-                return url
-            } catch {
-                print("ERROR RESOLVING BOOKMARK: \(error)")
-                return nil
-            }
+        guard let data = outputFolderBookmark, let resolved = OutputMode.resolveOutputFolder(from: data) else { return nil }
+        if resolved.isStale {
+            saveBookmark(for: resolved.url)
         }
+        return resolved.url
+    }
 
     func findMissingPermissionDirectory(for mode: OutputMode) -> URL? {
             if mode == .overwrite { return nil }
@@ -846,75 +833,11 @@ final class ChiselViewModel {
 #endif
     }
 
-    private func generateUniqueURL(for url: URL) -> URL {
-        let fm = FileManager.default
-        if !fm.fileExists(atPath: url.path) { return url }
-
-        let dir = url.deletingLastPathComponent()
-        let ext = url.pathExtension
-        let name = url.deletingPathExtension().lastPathComponent
-
-        var counter = 1
-        var newURL = url
-
-        while fm.fileExists(atPath: newURL.path) {
-            newURL = dir.appendingPathComponent("\(name)-\(counter)").appendingPathExtension(ext)
-            counter += 1
-        }
-
-        return newURL
-    }
-
     private func finalizeFile(item: FileItem, mode: OutputMode) throws {
-        let fm = FileManager.default
-        let original = item.url
-        let temp = item.tempURL
-
         // ignore items that are only temporary (extracted children)
         // the parent container will handle the finalization
-        guard original.path != temp.path else { return }
-
-        let originalNoExt = original.deletingPathExtension()
-        let ext = original.pathExtension
-
-        // start access to the original resource (held by the bookmark/active access)
-        guard original.startAccessingSecurityScopedResource() else {
-            throw NSError(domain: "ChiselError", code: 1, userInfo: [NSLocalizedDescriptionKey: "PERMISSION DENIED FOR ORIGINAL FILE"])
-        }
-        defer { original.stopAccessingSecurityScopedResource() }
-
-        switch mode {
-        case .overwrite:
-            print("OVERWRITING ORIGINAL: \(original.lastPathComponent)")
-            _ = try fm.replaceItemAt(original, withItemAt: temp)
-
-        case .sideBySide:
-            var newURL = originalNoExt.appendingPathExtension("compressed").appendingPathExtension(ext)
-            newURL = generateUniqueURL(for: newURL)
-            print("SAVING SIDE-BY-SIDE: \(newURL.lastPathComponent)")
-            try fm.moveItem(at: temp, to: newURL)
-
-        case .keepOriginal:
-            var backupURL = originalNoExt.appendingPathExtension("original").appendingPathExtension(ext)
-            backupURL = generateUniqueURL(for: backupURL)
-            print("CREATING BACKUP AND SWAPPING: \(backupURL.lastPathComponent)")
-            try fm.moveItem(at: original, to: backupURL)
-            try fm.moveItem(at: temp, to: original)
-        case .outputFolder:
-            guard let destFolder = getOutputFolderURL() else {
-                throw NSError(domain: "ChiselError", code: 2, userInfo: [NSLocalizedDescriptionKey: "NO OUTPUT FOLDER SELECTED"])
-            }
-            guard destFolder.startAccessingSecurityScopedResource() else {
-                throw NSError(domain: "ChiselError", code: 3, userInfo: [NSLocalizedDescriptionKey: "PERMISSION DENIED FOR OUTPUT FOLDER"])
-            }
-            defer { destFolder.stopAccessingSecurityScopedResource() }
-
-            var destURL = destFolder.appendingPathComponent(original.lastPathComponent)
-            destURL = generateUniqueURL(for: destURL)
-            print("MOVING TO CUSTOM FOLDER: \(destURL.path)")
-            try? fm.removeItem(at: destURL)
-            try fm.moveItem(at: temp, to: destURL)
-        }
+        guard item.url.path != item.tempURL.path else { return }
+        _ = try mode.place(item.tempURL, for: item.url, outputFolder: mode == .outputFolder ? getOutputFolderURL() : nil)
     }
     func findItem(with id: UUID, in searchItems: [FileItem]? = nil) -> FileItem? {
         let source = searchItems ?? items
