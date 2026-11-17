@@ -21,14 +21,16 @@ struct SettingsView: View {
     private let maxSystemThreads = max(1, ProcessInfo.processInfo.activeProcessorCount)
 
     // description based on the current output mode
-    private var outputModeDescription: String {
-        let mode = outputMode.rawValue.lowercased()
-        if mode.contains("overwrite") {
+    private var outputModeDescription: LocalizedStringKey {
+        switch outputMode {
+        case .overwrite:
             return "Replaces the original files with the compressed versions. This action is destructive."
-        } else if mode.contains("folder") || mode.contains("directory") {
-            return "Saves the compressed files into the selected destination directory, leaving originals intact."
-        } else {
+        case .sideBySide:
             return "Creates a separate copy of the compressed file alongside the original."
+        case .keepOriginal:
+            return "Renames the original file and saves the compressed version in its place."
+        case .outputFolder:
+            return "Saves the compressed files into the selected destination directory, leaving originals intact."
         }
     }
 
@@ -49,7 +51,7 @@ private func selectFolder() {
     panel.canChooseFiles = false
     panel.canChooseDirectories = true
     panel.allowsMultipleSelection = false
-    panel.message = "Select the output directory for compressed files"
+    panel.message = String(localized: "Select the output directory for compressed files")
 
     if panel.runModal() == .OK, let url = panel.url {
         do {

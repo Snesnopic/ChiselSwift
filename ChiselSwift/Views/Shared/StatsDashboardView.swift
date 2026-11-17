@@ -90,7 +90,7 @@ struct StatsDashboardView: View {
 // MARK: - Components
 
 struct HeroStatCard: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let color: Color
     @Environment(\.colorScheme) var colorScheme: ColorScheme
@@ -126,7 +126,7 @@ struct HeroStatCard: View {
 }
 
 struct StatCardView: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let icon: String
     let color: Color

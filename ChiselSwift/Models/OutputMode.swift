@@ -21,9 +21,9 @@ enum OutputMode: String, CaseIterable, Identifiable {
         case .overwrite:
             return String(localized: "Overwrite")
         case .sideBySide:
-            return String(localized: "Alongside original (a-compressed.pdf)")
+            return String(localized: "Alongside original (a.compressed.pdf)")
         case .keepOriginal:
-            return String(localized: "Rename original (a-original.pdf)")
+            return String(localized: "Rename original (a.original.pdf)")
         case .outputFolder:
             return String(localized: "Custom output folder")
         }

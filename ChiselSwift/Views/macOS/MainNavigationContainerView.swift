@@ -223,10 +223,14 @@ struct MainNavigationContainerView: View {
         panel.allowsMultipleSelection = false
 
         if missingFolderURL?.path == "GLOBAL_OUTPUT_FOLDER" {
-            panel.message = "Select the output directory for compressed files"
+            panel.message = String(localized: "Select the output directory for compressed files")
         } else {
             panel.directoryURL = missingFolderURL
-            panel.message = "Grant access to '\(missingFolderURL?.lastPathComponent ?? "this folder")'"
+            if let folderName = missingFolderURL?.lastPathComponent {
+                panel.message = String(localized: "Grant access to '\(folderName)'")
+            } else {
+                panel.message = String(localized: "Grant access to this folder")
+            }
         }
 
         guard panel.runModal() == .OK, let url = panel.url else { return }

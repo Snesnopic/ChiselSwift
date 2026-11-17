@@ -157,7 +157,7 @@ struct FileInspectorView: View {
     }
 
     @ViewBuilder
-        private func logTerminalView(logs: [String], title: String?) -> some View {
+        private func logTerminalView(logs: [String], title: LocalizedStringKey?) -> some View {
             VStack(alignment: .leading) {
                 if let title = title {
                     Text(title)
@@ -202,8 +202,8 @@ struct FileInspectorView: View {
         savePanel.allowedContentTypes = [.plainText]
         savePanel.canCreateDirectories = true
         savePanel.isExtensionHidden = false
-        savePanel.title = "Export Logs"
-        savePanel.message = "Choose where to save the log file"
+        savePanel.title = String(localized: "Export Logs")
+        savePanel.message = String(localized: "Choose where to save the log file")
         savePanel.nameFieldStringValue = filename
 
         if savePanel.runModal() == .OK {
