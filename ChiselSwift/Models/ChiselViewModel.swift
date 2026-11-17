@@ -254,7 +254,7 @@ final class ChiselViewModel {
         var extractionFolderParents: [String: String] = [:]
         var analysisFinished = false
 #if os(macOS)
-        MenuBarProgressManager.shared.show(isDeterminate: true)
+        MenuBarProgressManager.shared.show()
 #endif
 
         var stream = await chisel.process(files: urlsToProcess).makeAsyncIterator()

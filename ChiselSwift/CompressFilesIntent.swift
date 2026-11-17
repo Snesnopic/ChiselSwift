@@ -5,7 +5,7 @@ import Foundation
 
 /// An App Intent that exposes Chisel's compression capabilities to Apple Shortcuts and Siri.
 /// This allows users to compress files directly from the Finder context menu or automated workflows.
-struct CompressFilesIntent: AppIntent {
+struct CompressFilesIntent: AppIntent, ProgressReportingIntent {
     static let title: LocalizedStringResource = "Compress with Chisel"
     static let description = IntentDescription("Compresses the provided files using the Chisel engine.")
 
@@ -19,17 +19,10 @@ struct CompressFilesIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ReturnsValue<[IntentFile]> {
         let startTime = Date()
-        #if os(macOS)
-        // show spinner on main thread
-        await MenuBarProgressManager.shared.show()
+        // the system shows this progress with the app's icon wherever the shortcut runs
+        progress.localizedDescription = String(localized: "Compressing with Chisel…")
+        progress.localizedAdditionalDescription = String(localized: "Analyzing files…")
 
-        // ensure cleanup always happens, even if errors are thrown
-        defer {
-            Task {
-                await MenuBarProgressManager.shared.hide()
-            }
-        }
-        #endif
         // 1. read preferences matching @appstorage keys
         let defaults = UserDefaults.standard
         let iterations = UInt32(defaults.integer(forKey: "iterations") == 0 ? 15 : defaults.integer(forKey: "iterations"))
@@ -82,15 +75,40 @@ struct CompressFilesIntent: AppIntent {
         let workingUrls = jobs.compactMap(\.workingCopy)
 
         // 5. execute processing
+        // every file chisel analyzes, the ones found inside containers too, counts once it reaches its final result;
+        // the total is only known once the analysis ends, since it keeps finding files inside containers until then
+        var analyzed: Set<String> = []
+        var settled: Set<String> = []
+        var analysisFinished = false
+
+        func reportProgress() {
+            progress.localizedAdditionalDescription = String(localized: "\(analyzed.count - settled.count) files left")
+            progress.totalUnitCount = Int64(analyzed.count)
+            progress.completedUnitCount = Int64(settled.count)
+        }
+
+        func settle(_ path: String) {
+            guard analyzed.contains(path), settled.insert(path).inserted, analysisFinished else { return }
+            reportProgress()
+        }
+
         let stream = await chisel.process(files: workingUrls)
         for await event in stream {
             switch event {
+            case .analyzeComplete(let path, _, _, _):
+                analyzed.insert(path)
+            case .start, .finalizeStart:
+                if !analysisFinished {
+                    analysisFinished = true
+                    reportProgress()
+                }
             // a container's own recompression is followed by its final rebuild, which reports the result
-            case .finish(let path, let before, let after, _, _, let isContainer) where !isContainer && after < before:
+            case .finish(let path, let before, let after, _, _, let isContainer) where !isContainer:
+                settle(path)
                 let url = URL(fileURLWithPath: path)
 
                 // only track the root requested files, ignoring internal extracted files
-                if workingUrls.contains(where: { $0.path == url.path }) {
+                if after < before, workingUrls.contains(where: { $0.path == url.path }) {
                     let duration = Date().timeIntervalSince(startTime)
                     let stat = CompressionStat(
                         fileExtension: url.pathExtension,
@@ -100,10 +118,15 @@ struct CompressFilesIntent: AppIntent {
                     )
                     context.insert(stat)
                 }
+            case .skipped(let path, _, _, let isContainer, _) where !isContainer:
+                settle(path)
+            case .error(let path, _, _, let isContainer) where !isContainer:
+                settle(path)
             default:
                 break
             }
         }
+        progress.completedUnitCount = progress.totalUnitCount
 
         try context.save()
 

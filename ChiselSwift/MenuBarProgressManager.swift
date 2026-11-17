@@ -7,8 +7,7 @@ final class MenuBarProgressManager {
     private var statusItem: NSStatusItem?
     private var indicator: NSProgressIndicator?
 
-    // isDeterminate = false for background intent, true for foreground ui
-    func show(isDeterminate: Bool = false) {
+    func show() {
         guard statusItem == nil else { return }
         print("SHOWING MENU BAR PROGRESS INDICATOR")
 
@@ -18,15 +17,10 @@ final class MenuBarProgressManager {
         let newIndicator = NSProgressIndicator(frame: NSRect(x: 6, y: 4, width: 16, height: 16))
         newIndicator.style = .spinning
         newIndicator.controlSize = .small
-        newIndicator.isIndeterminate = !isDeterminate
-
-        if isDeterminate {
-            newIndicator.minValue = 0
-            newIndicator.maxValue = 100
-            newIndicator.doubleValue = 0
-        } else {
-            newIndicator.startAnimation(nil)
-        }
+        newIndicator.isIndeterminate = false
+        newIndicator.minValue = 0
+        newIndicator.maxValue = 100
+        newIndicator.doubleValue = 0
 
         let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 28, height: 24))
         containerView.addSubview(newIndicator)
@@ -62,7 +56,6 @@ import SwiftUI
 #if DEBUG
 // wrapper to expose appkit views to swiftui canvas
 struct MenuBarWidgetPreview: NSViewRepresentable {
-    let isDeterminate: Bool
     let percentage: Double
 
     func makeNSView(context: Context) -> NSView {
@@ -71,15 +64,10 @@ struct MenuBarWidgetPreview: NSViewRepresentable {
         let indicator = NSProgressIndicator(frame: NSRect(x: 6, y: 4, width: 16, height: 16))
         indicator.style = .spinning
         indicator.controlSize = .small
-        indicator.isIndeterminate = !isDeterminate
-
-        if isDeterminate {
-            indicator.minValue = 0
-            indicator.maxValue = 100
-            indicator.doubleValue = percentage * 100
-        } else {
-            indicator.startAnimation(nil)
-        }
+        indicator.isIndeterminate = false
+        indicator.minValue = 0
+        indicator.maxValue = 100
+        indicator.doubleValue = percentage * 100
 
         containerView.addSubview(indicator)
         return containerView
@@ -93,22 +81,12 @@ struct MenuBarWidgetPreview: NSViewRepresentable {
 #Preview("MenuBar Widget States") {
     VStack(alignment: .leading, spacing: 20) {
         HStack {
-            Text("Intent background (indeterminate):")
-                .font(.caption)
-                .frame(width: 220, alignment: .leading)
-            MenuBarWidgetPreview(isDeterminate: false, percentage: 0)
-                .frame(width: 28, height: 24)
-                // simulate macos menubar height and padding
-                .background(Color(NSColor.windowBackgroundColor))
-                .cornerRadius(4)
-        }
-
-        HStack {
             Text("Foreground UI (30%):")
                 .font(.caption)
                 .frame(width: 220, alignment: .leading)
-            MenuBarWidgetPreview(isDeterminate: true, percentage: 0.3)
+            MenuBarWidgetPreview(percentage: 0.3)
                 .frame(width: 28, height: 24)
+                // simulate macos menubar height and padding
                 .background(Color(NSColor.windowBackgroundColor))
                 .cornerRadius(4)
         }
@@ -117,7 +95,7 @@ struct MenuBarWidgetPreview: NSViewRepresentable {
             Text("Foreground UI (85%):")
                 .font(.caption)
                 .frame(width: 220, alignment: .leading)
-            MenuBarWidgetPreview(isDeterminate: true, percentage: 0.85)
+            MenuBarWidgetPreview(percentage: 0.85)
                 .frame(width: 28, height: 24)
                 .background(Color(NSColor.windowBackgroundColor))
                 .cornerRadius(4)

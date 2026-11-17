@@ -46,6 +46,47 @@
         }
       }
     },
+    "%lld files left" : {
+      "comment" : "Progress detail while the Compress with Chisel shortcut runs: files, including the ones inside containers, still to finish.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld file left"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld files left"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Manca %lld file"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mancano %lld file"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld unsupported files skipped" : {
       "comment" : "Message summarizing how many unsupported files were automatically skipped.",
       "localizations" : {
@@ -149,6 +190,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Numero di iterazioni dell'algoritmo zopfli sui file deflate (PNG, PDF, archivi)."
+          }
+        }
+      }
+    },
+    "Analyzing files…" : {
+      "comment" : "Progress detail while the Compress with Chisel shortcut is still looking inside the files.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analisi dei file…"
           }
         }
       }
@@ -355,6 +407,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Comprime i file forniti con il motore Chisel."
+          }
+        }
+      }
+    },
+    "Compressing with Chisel…" : {
+      "comment" : "Progress description shown by the system while the Compress with Chisel shortcut runs.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compressione con Chisel…"
           }
         }
       }
