@@ -154,13 +154,18 @@ final class ChiselViewModel {
                         }
                         continue
                     }
-                    let destinationURL = tempDirectory.appendingPathComponent(fileURL.lastPathComponent)
-
-                do {
-                    if FileManager.default.fileExists(atPath: destinationURL.path) {
-                        try FileManager.default.removeItem(at: destinationURL)
+                    guard !items.contains(where: { $0.url == fileURL && $0.status == .pending }) else {
+                        print("ALREADY QUEUED: \(fileURL.lastPathComponent)")
+                        continue
                     }
 
+                    // own folder per copy: files with the same name (e.g. from different subfolders) must not share one
+                    let destinationURL = tempDirectory
+                        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+                        .appendingPathComponent(fileURL.lastPathComponent)
+
+                do {
+                    try FileManager.default.createDirectory(at: destinationURL.deletingLastPathComponent(), withIntermediateDirectories: true)
                     try FileManager.default.copyItem(at: fileURL, to: destinationURL)
 
                     let attr = try FileManager.default.attributesOfItem(atPath: destinationURL.path)
@@ -174,10 +179,8 @@ final class ChiselViewModel {
                         originalExtension: destinationURL.pathExtension.lowercased()
                     )
 
-                    if !items.contains(where: { $0.url == destinationURL }) {
-                        items.append(item)
-                        print("ADDED FILE: \(destinationURL.lastPathComponent)")
-                    }
+                    items.append(item)
+                    print("ADDED FILE: \(destinationURL.lastPathComponent)")
                 } catch {
                     print("ERROR PREPARING FILE: \(error)")
                 }
