@@ -381,6 +381,7 @@ final class ChiselViewModel {
                         parent.status = finalizationFailed ? .error("Save failed") : (isGain ? (dryRun ? .simulated : .completed(parent.url)) : .noGain)
                         parent.logs.append(finalMsg)
                         logs.append(finalMsg)
+                        Self.settleContents(of: &parent)
 
                         if isGain && !finalizationFailed && !dryRun {
                             let duration = CFAbsoluteTimeGetCurrent() - (startTimes[path] ?? CFAbsoluteTimeGetCurrent())
@@ -399,13 +400,14 @@ final class ChiselViewModel {
                             localChild.sizeAfter = Int64(sizeAfter)
                             localChild.status = finalizationFailed ? .error("Save failed") : (isGain ? (dryRun ? .simulated : .completed(localChild.url)) : .noGain)
                             localChild.logs.append(finalMsg)
+                            Self.settleContents(of: &localChild)
                             child = localChild
                         }
                         parent.logs.append("[CHILD] \(finalMsg)")
                         logs.append("[CHILD] \(finalMsg)")
                     }
                 }
-            case .error(let path, let message, let parentContainer, _):
+            case .error(let path, let message, let parentContainer, let isContainerSelf):
                 if parentContainer == nil, !analysisFinished, exactIndexPath(for: path, in: items) == nil {
                     deferredAnalysisEvents.append(event)
                     break
@@ -415,13 +417,19 @@ final class ChiselViewModel {
                     let targetName = URL(fileURLWithPath: path).lastPathComponent
                     let errorMsg = "ERROR [\(targetName)]: \(message)"
 
+                    // a failed recompression of a container's own stream isn't final: its rebuild still runs
                     if isRoot {
                         parent.status = .error(message)
                         parent.logs.append(errorMsg)
                         logs.append(errorMsg)
+                        if !isContainerSelf { Self.settleContents(of: &parent) }
                     } else {
-                        child?.status = .error(message)
-                        child?.logs.append(errorMsg)
+                        if var failed = child {
+                            failed.status = .error(message)
+                            failed.logs.append(errorMsg)
+                            if !isContainerSelf { Self.settleContents(of: &failed) }
+                            child = failed
+                        }
                         parent.logs.append("[CHILD] \(errorMsg)")
                         logs.append("[CHILD] \(errorMsg)")
                     }
@@ -527,6 +535,7 @@ final class ChiselViewModel {
                 switch nodes[j].status {
                 case .completed, .noGain, .simulated:
                     nodes[j].status = .stopped
+                    nodes[j].sizeAfter = nil
                     let msg = "DISCARDED: PARENT CONTAINER WAS NOT FINALIZED"
                     nodes[j].logs.append(msg)
                     logsToAppend.append("[\(nodes[j].url.lastPathComponent)] \(msg)")
@@ -623,6 +632,44 @@ final class ChiselViewModel {
             } else {
                 child?.status = .processing
                 child?.logs.append("[CHILD] \(msg)")
+            }
+        }
+    }
+
+    // what a container's final result means for its contents, whose results only reach disk inside it:
+    // all of them fail with it, and on no gain the ones that had shrunk are discarded
+    private static func settleContents(of container: inout FileItem) {
+        guard container.children != nil else { return }
+        let name = container.url.lastPathComponent
+        switch container.status {
+        case .error:
+            markContents(&container.children!) { status in
+                if case .error = status { return nil }
+                return (.error("Container \(name) failed"), "ERROR: CONTAINER \(name) FAILED, NOTHING INSIDE IT WAS SAVED")
+            }
+        case .noGain:
+            markContents(&container.children!) { status in
+                switch status {
+                case .completed, .simulated:
+                    return (.skipped, "DISCARDED: CONTAINER \(name) DID NOT GET SMALLER")
+                default:
+                    return nil
+                }
+            }
+        default:
+            break
+        }
+    }
+
+    private static func markContents(_ nodes: inout [FileItem], _ rule: (FileItem.ProcessingStatus) -> (FileItem.ProcessingStatus, String)?) {
+        for idx in nodes.indices {
+            if let (status, log) = rule(nodes[idx].status) {
+                nodes[idx].status = status
+                nodes[idx].sizeAfter = nil
+                nodes[idx].logs.append(log)
+            }
+            if nodes[idx].children != nil {
+                markContents(&nodes[idx].children!, rule)
             }
         }
     }
