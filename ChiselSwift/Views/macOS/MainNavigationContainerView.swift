@@ -58,7 +58,7 @@ struct MainNavigationContainerView: View {
         } detail: {
             switch selectedSection {
             case .compression:
-                CompressionListView(viewModel: viewModel, selectedFileID: $selectedFileID)
+                CompressionListView(viewModel: viewModel, selectedFileID: $selectedFileID, isInspectorPresented: $isInspectorPresented)
                     .navigationTitle("Chisel")
                     .toolbar {
                         if !(viewModel.items.isEmpty) {

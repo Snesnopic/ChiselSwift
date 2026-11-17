@@ -4,6 +4,7 @@ import SwiftData
 struct CompressionListView: View {
     @Bindable var viewModel: ChiselViewModel
     @Binding var selectedFileID: UUID?
+    @Binding var isInspectorPresented: Bool
 
     var body: some View {
         if viewModel.items.isEmpty {
@@ -59,7 +60,7 @@ struct CompressionListView: View {
                     if isError {
                         Button {
                             selectedFileID = item.id
-                            // open inspector or specific log view
+                            isInspectorPresented = true
                         } label: {
                             Image(systemName: "exclamationmark.octagon.fill")
                                 .foregroundStyle(.red)
@@ -177,26 +178,26 @@ struct CompressionListView: View {
 }
 
 #Preview("Light mode") {
-    CompressionListView(viewModel: ChiselViewModel(), selectedFileID: .constant(UUID()))
+    CompressionListView(viewModel: ChiselViewModel(), selectedFileID: .constant(UUID()), isInspectorPresented: .constant(false))
         .modelContainer(for: CompressionStat.self, inMemory: true)
         .preferredColorScheme(.light)
 }
 
 #Preview("Dark mode") {
-    CompressionListView(viewModel: ChiselViewModel(), selectedFileID: .constant(UUID()))
+    CompressionListView(viewModel: ChiselViewModel(), selectedFileID: .constant(UUID()), isInspectorPresented: .constant(false))
         .modelContainer(for: CompressionStat.self, inMemory: true)
         .preferredColorScheme(.dark)
 }
 
 #Preview("Populated list - Light") {
-    CompressionListView(viewModel: ChiselViewModel(input: FileItem.mockData), selectedFileID: .constant(UUID()))
+    CompressionListView(viewModel: ChiselViewModel(input: FileItem.mockData), selectedFileID: .constant(UUID()), isInspectorPresented: .constant(false))
         .modelContainer(for: CompressionStat.self, inMemory: true)
         .preferredColorScheme(.light)
         .frame(width: 500, height: 400)
 }
 
 #Preview("Populated list - Dark") {
-    CompressionListView(viewModel: ChiselViewModel(input: FileItem.mockData), selectedFileID: .constant(UUID()))
+    CompressionListView(viewModel: ChiselViewModel(input: FileItem.mockData), selectedFileID: .constant(UUID()), isInspectorPresented: .constant(false))
         .modelContainer(for: CompressionStat.self, inMemory: true)
         .preferredColorScheme(.light)
         .frame(width: 500, height: 400)
