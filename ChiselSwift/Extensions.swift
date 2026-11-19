@@ -73,14 +73,6 @@ extension Int64 {
     }
 }
 
-#if !os(macOS)
-extension UIDevice {
-    static var isIpad: Bool {
-        current.userInterfaceIdiom == .pad
-    }
-}
-#endif
-
 extension FileItem {
     // generates heterogeneous dummy data covering all statuses and edge cases
     static var mockData: [FileItem] {

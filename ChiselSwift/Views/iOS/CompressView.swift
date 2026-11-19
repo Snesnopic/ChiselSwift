@@ -14,6 +14,10 @@ struct CompressView: View {
     // state for global logs modal
     @State private var showGlobalLogs = false
 
+    @State private var selectedFileID: UUID?
+    @State private var columnVisibility = NavigationSplitViewVisibility.all
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     @AppStorage("iterations") private var iterations: Int = 15
     @AppStorage("iterationsLarge") private var iterationsLarge: Int = 5
     @AppStorage("threads") private var threads: Int = 4
@@ -24,7 +28,7 @@ struct CompressView: View {
     @Environment(\.modelContext) private var modelContext
 
     private var descriptionText: Text {
-        if UIDevice.current.userInterfaceIdiom == .pad {
+        if horizontalSizeClass == .regular {
             return Text("Drag and drop files here, or use the add button to start compressing.")
         } else {
             return Text("Use the add button to select files to compress.")
@@ -32,14 +36,14 @@ struct CompressView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            if viewModel.items.isEmpty {
+        if viewModel.items.isEmpty {
+            NavigationStack {
                 ContentUnavailableView {
-                        Label("No files selected", systemImage: "tray.and.arrow.down.fill")
-                    } description: {
-                        descriptionText.lineLimit(1)
-                    }
-                    .background(Color(uiColor: UIColor.systemGroupedBackground))
+                    Label("No files selected", systemImage: "tray.and.arrow.down.fill")
+                } description: {
+                    descriptionText
+                }
+                .background(Color(uiColor: UIColor.systemGroupedBackground))
                 .dropDestination(for: URL.self) { items, _ in
                     viewModel.addFiles(urls: items, recursive: recursiveFolderImport)
                     return true
@@ -65,91 +69,163 @@ struct CompressView: View {
                         print("FILE IMPORT FAILED: \(error)")
                     }
                 }
+            }
+        } else {
+            // collapses to the list, pushing the inspector, where there's no room for both
+            NavigationSplitView(columnVisibility: $columnVisibility) {
+                fileList
+                    // both columns stay visible, and the floating tab bar would cover the toggle anyway
+                    .toolbar(removing: .sidebarToggle)
+            } detail: {
+                if let selectedFileID, let file = viewModel.findItem(with: selectedFileID) {
+                    FileInspectorView(file: file, allLogs: viewModel.logs)
+                } else {
+                    ContentUnavailableView("No selection", systemImage: "info.circle")
+                }
+            }
+            .navigationSplitViewStyle(.balanced)
+        }
+    }
+
+    private var fileList: some View {
+        List(selection: $selectedFileID) {
+            Section("Files") {
+                ForEach(viewModel.items) { item in
+                    RecursiveFileNodeView(item: item)
+                }
+                .onDelete { indexSet in
+                    viewModel.removeItems(at: indexSet)
+                }
+            }
+            if !viewModel.unsupportedURLs.isEmpty {
+                unsupportedSection
+            }
+        }
+        .navigationTitle("Chisel")
+        .toolbar {
+            // open global logs
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { showGlobalLogs.toggle() }) {
+                    Image(systemName: "terminal")
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: { viewModel.clearItems() }) {
+                    Image(systemName: "trash")
+                }
+                .disabled(viewModel.items.isEmpty || viewModel.isProcessing || viewModel.isImporting)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: { isImporterPresented.toggle() }) {
+                    Image(systemName: "plus")
+                }
+                .disabled(viewModel.isProcessing || viewModel.isImporting)
+            }
+        }
+        .dropDestination(for: URL.self) { items, _ in
+            viewModel.addFiles(urls: items, recursive: recursiveFolderImport)
+            return true
+        }
+        .alert("Permission required", isPresented: $showPermissionAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Select folder") {
+                isPermissionPickerPresented = true
+            }
+        } message: {
+            if missingFolderURL?.path == "GLOBAL_OUTPUT_FOLDER" {
+                Text("Please select a default output folder for your compressed files.")
             } else {
-                List {
-                    Section("Files") {
-                        ForEach(viewModel.items) { item in
-                            RecursiveFileNodeView(item: item, viewModel: viewModel)
-                        }
-                        .onDelete { indexSet in
-                            viewModel.removeItems(at: indexSet)
-                        }
-                    }
-                }
-                .navigationTitle("Chisel")
-                .toolbar {
-                    // open global logs
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: { showGlobalLogs.toggle() }) {
-                            Image(systemName: "terminal")
-                        }
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: { viewModel.clearItems() }) {
-                            Image(systemName: "trash")
-                        }
-                        .disabled(viewModel.items.isEmpty || viewModel.isProcessing || viewModel.isImporting)
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: { isImporterPresented.toggle() }) {
-                            Image(systemName: "plus")
-                        }
-                        .disabled(viewModel.isProcessing || viewModel.isImporting)
-                    }
-                }
-                .dropDestination(for: URL.self) { items, _ in
-                    viewModel.addFiles(urls: items, recursive: recursiveFolderImport)
-                    return true
-                }
-                .alert("Permission required", isPresented: $showPermissionAlert) {
-                    Button("Cancel", role: .cancel) { }
-                    Button("Select folder") {
-                        isPermissionPickerPresented = true
-                    }
-                } message: {
-                    if missingFolderURL?.path == "GLOBAL_OUTPUT_FOLDER" {
-                        Text("Please select a default output folder for your compressed files.")
-                    } else {
-                        Text("To save files alongside the originals, Chisel needs permission to access '\(missingFolderURL?.lastPathComponent ?? "the folder")'. Please select it in the next screen to grant access.")
-                    }
-                }
-                .fileImporter(
-                    isPresented: $isImporterPresented,
-                    allowedContentTypes: [.data, .folder],
-                    allowsMultipleSelection: true
-                ) { result in
-                    switch result {
-                    case .success(let urls):
-                        viewModel.addFiles(urls: urls, recursive: recursiveFolderImport)
-                    case .failure(let error):
-                        print("FILE IMPORT FAILED: \(error)")
-                    }
-                }
-                // sheet definition for global logs
-                .sheet(isPresented: $showGlobalLogs) {
-                    NavigationStack {
-                        FileInspectorView(file: nil, allLogs: viewModel.logs)
-                            .toolbar {
-                                ToolbarItem(placement: .cancellationAction) {
+                Text("To save files alongside the originals, Chisel needs permission to access '\(missingFolderURL?.lastPathComponent ?? "the folder")'. Please select it in the next screen to grant access.")
+            }
+        }
+        .fileImporter(
+            isPresented: $isImporterPresented,
+            allowedContentTypes: [.data, .folder],
+            allowsMultipleSelection: true
+        ) { result in
+            switch result {
+            case .success(let urls):
+                viewModel.addFiles(urls: urls, recursive: recursiveFolderImport)
+            case .failure(let error):
+                print("FILE IMPORT FAILED: \(error)")
+            }
+        }
+        // sheet definition for global logs
+        .sheet(isPresented: $showGlobalLogs) {
+            NavigationStack {
+                FileInspectorView(file: nil, allLogs: viewModel.logs)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
 
-                                    Button(role: .cancel) {
-                                        showGlobalLogs = false
-                                    } label: {
-                                        Image(systemName: "xmark")
-                                    }
-
-                                }
+                            Button(role: .cancel) {
+                                showGlobalLogs = false
+                            } label: {
+                                Image(systemName: "xmark")
                             }
-                    }
-                    .presentationDragIndicator(.visible)
-                }
-                .safeAreaInset(edge: .bottom) {
-                    Button(action: {
-                        if viewModel.isProcessing {
-                            viewModel.stopProcessing()
-                        }
 
-                        isDryRunPending = false
+                        }
+                    }
+            }
+            .presentationDragIndicator(.visible)
+        }
+        .safeAreaInset(edge: .bottom) {
+            Button(action: {
+                if viewModel.isProcessing {
+                    viewModel.stopProcessing()
+                }
+
+                isDryRunPending = false
+                if let missingDir = viewModel.findMissingPermissionDirectory(for: outputMode) {
+                    missingFolderURL = missingDir
+                    showPermissionAlert = true
+                } else {
+                    Task {
+                        await viewModel.startProcessing(
+                            iterations: iterations,
+                            iterationsLarge: iterationsLarge,
+                            threads: threads,
+                            hideUnsupported: hideUnsupported,
+                            outputMode: outputMode,
+                            dryRun: false,
+                            context: modelContext
+                        )
+                    }
+                }
+            }) {
+                HStack(spacing: 8) {
+                    if viewModel.isStopping {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        Text("Stopping threads...")
+                    } else if viewModel.isImporting {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        Text("Importing files...")
+                    } else if viewModel.isProcessing {
+                        Image(systemName: "stop.fill")
+                        Text("Stop processing")
+                    } else {
+                        Image(systemName: "play.fill")
+                        Text("Start processing")
+                    }
+                }
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(
+                    viewModel.isStopping ? Color.orange :
+                        (viewModel.isImporting ? Color.accentColor.opacity(0.6) :
+                            (viewModel.isProcessing ? Color.red :
+                                (!viewModel.canStartProcessing ? Color.gray : Color.accentColor))))
+                .foregroundColor(.white)
+                .cornerRadius(12)
+                .padding()
+            }
+            .disabled(viewModel.isStopping || (!viewModel.canStartProcessing && !viewModel.isProcessing))
+            .contextMenu {
+                if !viewModel.isProcessing && viewModel.canStartProcessing {
+                    Button {
+                        isDryRunPending = true
                         if let missingDir = viewModel.findMissingPermissionDirectory(for: outputMode) {
                             missingFolderURL = missingDir
                             showPermissionAlert = true
@@ -161,153 +237,102 @@ struct CompressView: View {
                                     threads: threads,
                                     hideUnsupported: hideUnsupported,
                                     outputMode: outputMode,
-                                    dryRun: false,
+                                    dryRun: true,
                                     context: modelContext
                                 )
                             }
                         }
-                    }) {
-                        HStack(spacing: 8) {
-                            if viewModel.isStopping {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                Text("Stopping threads...")
-                            } else if viewModel.isImporting {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                Text("Importing files...")
-                            } else if viewModel.isProcessing {
-                                Image(systemName: "stop.fill")
-                                Text("Stop processing")
-                            } else {
-                                Image(systemName: "play.fill")
-                                Text("Start processing")
-                            }
-                        }
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            viewModel.isStopping ? Color.orange :
-                                (viewModel.isImporting ? Color.accentColor.opacity(0.6) :
-                                    (viewModel.isProcessing ? Color.red :
-                                        (!viewModel.canStartProcessing ? Color.gray : Color.accentColor))))
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                        .padding()
-                    }
-                    .disabled(viewModel.isStopping || (!viewModel.canStartProcessing && !viewModel.isProcessing))
-                    .contextMenu {
-                        if !viewModel.isProcessing && viewModel.canStartProcessing {
-                            Button {
-                                isDryRunPending = true
-                                if let missingDir = viewModel.findMissingPermissionDirectory(for: outputMode) {
-                                    missingFolderURL = missingDir
-                                    showPermissionAlert = true
-                                } else {
-                                    Task {
-                                        await viewModel.startProcessing(
-                                            iterations: iterations,
-                                            iterationsLarge: iterationsLarge,
-                                            threads: threads,
-                                            hideUnsupported: hideUnsupported,
-                                            outputMode: outputMode,
-                                            dryRun: true,
-                                            context: modelContext
-                                        )
-                                    }
-                                }
-                            } label: {
-                                Label("Simulate only (Dry Run)", systemImage: "magnifyingglass")
-                            }
-                        }
-                    }
-                    .fileImporter(
-                        isPresented: $isPermissionPickerPresented,
-                        allowedContentTypes: [.folder],
-                        allowsMultipleSelection: false
-                    ) { result in
-                        switch result {
-                        case .success(let urls):
-                            guard let url = urls.first else { return }
-
-                            if missingFolderURL?.path == "GLOBAL_OUTPUT_FOLDER" {
-                                viewModel.saveBookmark(for: url)
-                            } else {
-                                if url.startAccessingSecurityScopedResource() {
-                                    viewModel.sessionAuthorizedFolders.insert(url)
-                                }
-                            }
-                            Task {
-                                await viewModel.startProcessing(
-                                    iterations: iterations,
-                                    iterationsLarge: iterationsLarge,
-                                    threads: threads,
-                                    hideUnsupported: hideUnsupported,
-                                    outputMode: outputMode,
-                                    dryRun: isDryRunPending,
-                                    context: modelContext
-                                )
-                            }
-                        case .failure(let error):
-                            print("PERMISSION IMPORT FAILED: \(error)")
-                        }
-                    }
-                    .fileDialogDefaultDirectory(missingFolderURL)
-                }
-                if !viewModel.unsupportedURLs.isEmpty {
-                    Section {
-                        DisclosureGroup {
-                            ForEach($viewModel.unsupportedURLs, id: \.self) { url in
-                                let realUrl = url.wrappedValue
-                                HStack {
-                                    let category = FileCategory.category(for: realUrl.pathExtension)
-
-                                    Image(systemName: category.iconName)
-                                        .frame(width: 24, height: 24)
-                                        .foregroundStyle(.gray)
-
-                                    Text(realUrl.lastPathComponent)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.gray)
-
-                                    Spacer()
-
-                                    Text("Unsupported")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                Image(systemName: "exclamationmark.triangle")
-                                    .foregroundStyle(.yellow)
-                                Text("\(viewModel.unsupportedURLs.count) unsupported files skipped")
-                                    .font(.headline)
-                            }
-                        }
+                    } label: {
+                        Label("Simulate only (Dry Run)", systemImage: "magnifyingglass")
                     }
                 }
             }
+            .fileImporter(
+                isPresented: $isPermissionPickerPresented,
+                allowedContentTypes: [.folder],
+                allowsMultipleSelection: false
+            ) { result in
+                switch result {
+                case .success(let urls):
+                    guard let url = urls.first else { return }
+
+                    if missingFolderURL?.path == "GLOBAL_OUTPUT_FOLDER" {
+                        viewModel.saveBookmark(for: url)
+                    } else {
+                        if url.startAccessingSecurityScopedResource() {
+                            viewModel.sessionAuthorizedFolders.insert(url)
+                        }
+                    }
+                    Task {
+                        await viewModel.startProcessing(
+                            iterations: iterations,
+                            iterationsLarge: iterationsLarge,
+                            threads: threads,
+                            hideUnsupported: hideUnsupported,
+                            outputMode: outputMode,
+                            dryRun: isDryRunPending,
+                            context: modelContext
+                        )
+                    }
+                case .failure(let error):
+                    print("PERMISSION IMPORT FAILED: \(error)")
+                }
+            }
+            .fileDialogDefaultDirectory(missingFolderURL)
         }
+    }
+
+    private var unsupportedSection: some View {
+            Section {
+                DisclosureGroup {
+                    ForEach($viewModel.unsupportedURLs, id: \.self) { url in
+                        let realUrl = url.wrappedValue
+                        HStack {
+                            let category = FileCategory.category(for: realUrl.pathExtension)
+
+                            Image(systemName: category.iconName)
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(.gray)
+
+                            Text(realUrl.lastPathComponent)
+                                .font(.subheadline)
+                                .foregroundStyle(.gray)
+
+                            Spacer()
+
+                            Text("Unsupported")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle")
+                            .foregroundStyle(.yellow)
+                        Text("\(viewModel.unsupportedURLs.count) unsupported files skipped")
+                            .font(.headline)
+                    }
+                }
+            }
     }
 }
 
 struct RecursiveFileNodeView: View {
     let item: FileItem
-    let viewModel: ChiselViewModel
 
     var body: some View {
         if let children = item.children, !children.isEmpty {
             DisclosureGroup {
                 ForEach(children) { child in
-                    RecursiveFileNodeView(item: child, viewModel: viewModel)
+                    RecursiveFileNodeView(item: child)
                 }
             } label: {
-                FileRowView(item: item, logs: viewModel.logs)
+                FileRowView(item: item)
+                    .tag(item.id)
             }
         } else {
-            FileRowView(item: item, logs: viewModel.logs)
+            FileRowView(item: item)
+                .tag(item.id)
         }
     }
 }
@@ -315,7 +340,6 @@ struct RecursiveFileNodeView: View {
 // standalone view to ensure proper diffing
 struct FileRowView: View {
     let item: FileItem
-    let logs: [String]
 
     // checks if current status is an error
     private var isError: Bool {
@@ -324,33 +348,31 @@ struct FileRowView: View {
     }
 
     var body: some View {
-        NavigationLink(destination: FileInspectorView(file: item, allLogs: logs)) {
-            HStack {
-                Image(systemName: item.typeIconName)
-                    .scaledToFit()
-                    .frame(width: 24, height: 24)
-                    .foregroundStyle(isError ? .red : .blue)
-                    .symbolRenderingMode(.hierarchical)
+        HStack {
+            Image(systemName: item.typeIconName)
+                .scaledToFit()
+                .frame(width: 24, height: 24)
+                .foregroundStyle(isError ? .red : .blue)
+                .symbolRenderingMode(.hierarchical)
 
-                VStack(alignment: .leading) {
-                    Text(item.url.lastPathComponent)
-                        .font(.headline)
-                        .foregroundStyle(isError ? .red : .primary)
+            VStack(alignment: .leading) {
+                Text(item.url.lastPathComponent)
+                    .font(.headline)
+                    .foregroundStyle(isError ? .red : .primary)
 
-                    if let children = item.children, !children.isEmpty {
-                        Text("\(children.count) files inside")
-                            .font(.caption2)
-                            .foregroundStyle(isError ? .red.opacity(0.8) : .secondary)
-                    } else {
-                        Text(ByteCountFormatter.string(fromByteCount: item.size, countStyle: .file))
-                            .font(.caption)
-                            .foregroundStyle(isError ? .red.opacity(0.8) : .secondary)
-                    }
+                if let children = item.children, !children.isEmpty {
+                    Text("\(children.count) files inside")
+                        .font(.caption2)
+                        .foregroundStyle(isError ? .red.opacity(0.8) : .secondary)
+                } else {
+                    Text(ByteCountFormatter.string(fromByteCount: item.size, countStyle: .file))
+                        .font(.caption)
+                        .foregroundStyle(isError ? .red.opacity(0.8) : .secondary)
                 }
-
-                Spacer()
-                StatusBadgeView(status: item.status)
             }
+
+            Spacer()
+            StatusBadgeView(status: item.status)
         }
     }
 }
