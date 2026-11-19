@@ -9,42 +9,23 @@ struct FileInspectorView: View {
     var showsToolbarAction: Bool = true
 
     @State private var quickLookURL: URL?
+#if os(iOS)
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+#endif
 
     var body: some View {
         Group {
             if let file = file {
-                VStack(alignment: .leading, spacing: 20) {
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        previewView(for: file)
-
-                        HStack {
-                            Image(systemName: file.typeIconName)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 24, height: 24)
-                                .foregroundColor(.blue)
-
-                            Text(file.url.lastPathComponent)
-                                .font(.headline)
-                        }
-                    }
-
-                    Divider()
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        InfoRow(label: "Format", value: file.originalExtension.uppercased())
-                        InfoRow(label: "Original size", value: formatSize(file.size))
-                        if let after = file.sizeAfter {
-                            InfoRow(label: "New size", value: formatSize(after))
-                        }
-                    }
-
-                    logTerminalView(logs: file.logs, title: "Process log")
-
-                    Spacer()
+#if os(iOS)
+                if verticalSizeClass == .compact {
+                    // too short to give the log a pane of its own, so the whole inspector scrolls
+                    ScrollView { fileDetails(file, scrollsLog: false) }
+                } else {
+                    fileDetails(file, scrollsLog: true)
                 }
-                .padding()
+#else
+                fileDetails(file, scrollsLog: true)
+#endif
             } else {
                 // global terminal when no file is selected
                 NavigationStack {
@@ -156,36 +137,77 @@ struct FileInspectorView: View {
         }
     }
 
-    @ViewBuilder
-        private func logTerminalView(logs: [String], title: LocalizedStringKey?) -> some View {
-            VStack(alignment: .leading) {
-                if let title = title {
-                    Text(title)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
+    private func fileDetails(_ file: FileItem, scrollsLog: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 20) {
 
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 4) {
-                        if logs.isEmpty {
-                            Text("No log data available")
-                                .foregroundStyle(.secondary)
-                        } else {
-                            ForEach(Array(logs.enumerated()), id: \.offset) { _, logLine in
-                                Text(logLine)
-                                    .foregroundStyle(logLine.localizedCaseInsensitiveContains("error") ? .red : .primary)
-                            }
-                        }
-                    }
-                    .font(.system(.caption2, design: .monospaced))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(8)
-                    .background(.background)
-                    .cornerRadius(4)
+            VStack(alignment: .leading, spacing: 12) {
+                previewView(for: file)
+
+                HStack {
+                    Image(systemName: file.typeIconName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.blue)
+
+                    Text(file.url.lastPathComponent)
+                        .font(.headline)
                 }
             }
-            .padding(.horizontal, title == nil ? 16 : 0)
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 8) {
+                InfoRow(label: "Format", value: file.originalExtension.uppercased())
+                InfoRow(label: "Original size", value: formatSize(file.size))
+                if let after = file.sizeAfter {
+                    InfoRow(label: "New size", value: formatSize(after))
+                }
+            }
+
+            logTerminalView(logs: file.logs, title: "Process log", scrolls: scrollsLog)
+
+            Spacer()
         }
+        .padding()
+    }
+
+    @ViewBuilder
+    private func logTerminalView(logs: [String], title: LocalizedStringKey?, scrolls: Bool = true) -> some View {
+        VStack(alignment: .leading) {
+            if let title = title {
+                Text(title)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+
+            if scrolls {
+                ScrollView { logLines(logs) }
+            } else {
+                logLines(logs)
+            }
+        }
+        .padding(.horizontal, title == nil ? 16 : 0)
+    }
+
+    private func logLines(_ logs: [String]) -> some View {
+        LazyVStack(alignment: .leading, spacing: 4) {
+            if logs.isEmpty {
+                Text("No log data available")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(Array(logs.enumerated()), id: \.offset) { _, logLine in
+                    Text(logLine)
+                        .foregroundStyle(logLine.localizedCaseInsensitiveContains("error") ? .red : .primary)
+                }
+            }
+        }
+        .font(.system(.caption2, design: .monospaced))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(8)
+        .background(.background)
+        .cornerRadius(4)
+    }
 
     private func formatSize(_ bytes: Int64) -> String {
         ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
