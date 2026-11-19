@@ -157,7 +157,7 @@ struct CompressFilesIntent: AppIntent, ProgressReportingIntent {
                     )
                     context.insert(stat)
                 }
-            case .skipped(let path, _, _, let isContainer, _) where !isContainer:
+            case .skipped(let path, _, _, _, let isContainer) where !isContainer:
                 settle(path)
             case .error(let path, _, _, let isContainer) where !isContainer:
                 settle(path)

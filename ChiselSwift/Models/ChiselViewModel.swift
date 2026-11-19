@@ -231,44 +231,17 @@ final class ChiselViewModel {
 
         var pendingStats: [CompressionStat] = []
         var startTimes: [String: CFAbsoluteTime] = [:]
-        // phase 1 runs in parallel: a nested container can finish its analysis before
-        // the container holding it, so it waits here until that one has a node
-        var unplacedContainers: [(path: String, parent: String, numChildren: Int)] = []
-        // phase 1 skips and errors carry no parent and often arrive before the node of the
-        // container they were found in exists, so they wait for the analysis to end and are
-        // then attributed through the extraction folder their siblings were reported in
-        var deferredAnalysisEvents: [ChiselEvent] = []
-        var extractionFolderParents: [String: String] = [:]
-        var analysisFinished = false
 #if os(macOS)
         MenuBarProgressManager.shared.show()
 #endif
 
-        var stream = await chisel.process(files: urlsToProcess).makeAsyncIterator()
-        while true {
-            let event: ChiselEvent
-            if analysisFinished, !deferredAnalysisEvents.isEmpty {
-                event = deferredAnalysisEvents.removeFirst()
-            } else if let next = await stream.next() {
-                if !analysisFinished, next.isPastAnalysis {
-                    analysisFinished = true
-                    placeRemainingContainers(&unplacedContainers)
-                    deferredAnalysisEvents.append(next)
-                    continue
-                }
-                event = next
-            } else if !analysisFinished {
-                analysisFinished = true
-                placeRemainingContainers(&unplacedContainers)
-                continue
-            } else {
-                break
-            }
-
+        // every event names the container its file came from, and a container is announced
+        // before anything inside it, so the tree can be built as events arrive
+        for await event in await chisel.process(files: urlsToProcess) {
             switch event {
 
             case .analyzeStart(let path):
-                // nested containers get their node once their analysis completes, with their exact parent
+                // nested containers get their node once their analysis completes
                 guard exactIndexPath(for: path, in: items) != nil else { break }
                 updateItem(for: path, createIfNeeded: false) { parent, child, isRoot in
                     let msg = "ANALYZING CONTAINER"
@@ -283,22 +256,8 @@ final class ChiselViewModel {
                 }
 
             case .analyzeComplete(let path, let extracted, let numChildren, let parentContainer):
-                if let parentContainer, let folder = Self.extractionFolder(of: path) {
-                    extractionFolderParents[folder] = parentContainer
-                }
                 guard extracted else { break }
-                if let parentContainer,
-                   exactIndexPath(for: path, in: items) == nil,
-                   exactIndexPath(for: parentContainer, in: items) == nil {
-                    unplacedContainers.append((path, parentContainer, numChildren))
-                    break
-                }
                 registerContainer(path: path, numChildren: numChildren, parentContainer: parentContainer)
-
-                while let idx = unplacedContainers.firstIndex(where: { exactIndexPath(for: $0.parent, in: items) != nil }) {
-                    let waiting = unplacedContainers.remove(at: idx)
-                    registerContainer(path: waiting.path, numChildren: waiting.numChildren, parentContainer: waiting.parent)
-                }
 
             case .start(let path, let parentContainer, _):
                 startTimes[path] = CFAbsoluteTimeGetCurrent()
@@ -395,12 +354,7 @@ final class ChiselViewModel {
                     }
                 }
             case .error(let path, let message, let parentContainer, let isContainerSelf):
-                if parentContainer == nil, !analysisFinished, exactIndexPath(for: path, in: items) == nil {
-                    deferredAnalysisEvents.append(event)
-                    break
-                }
-                let parentHint = parentContainer ?? Self.extractionFolder(of: path).flatMap { extractionFolderParents[$0] }
-                updateItem(for: path, createIfNeeded: true, parentHint: parentHint) { parent, child, isRoot in
+                updateItem(for: path, createIfNeeded: true, parentHint: parentContainer) { parent, child, isRoot in
                     let targetName = URL(fileURLWithPath: path).lastPathComponent
                     let errorMsg = "ERROR [\(targetName)]: \(message)"
 
@@ -422,36 +376,46 @@ final class ChiselViewModel {
                     }
                 }
 
-            case .skipped(let path, let reason, let parentContainer, _, let isSigned):
-                if parentContainer == nil, !analysisFinished, exactIndexPath(for: path, in: items) == nil {
-                    deferredAnalysisEvents.append(event)
-                    break
+            case .skipped(let path, let reason, let message, let parentContainer, let isContainerSelf):
+                // files that are supported but were left alone stay visible; the rest is what "hide unsupported" hides
+                let shouldHideChild: Bool
+                let computedStatus: FileItem.ProcessingStatus
+                switch reason {
+                case .noImprovement:
+                    shouldHideChild = false
+                    computedStatus = .noGain
+                case .interrupted:
+                    shouldHideChild = false
+                    computedStatus = .stopped
+                case .signed:
+                    shouldHideChild = false
+                    computedStatus = .skipped
+                case .junk, .empty, .unsupported, .nestingTooDeep, .nothingToDo:
+                    shouldHideChild = hideUnsupported
+                    computedStatus = .skipped
                 }
-                let parentHint = parentContainer ?? Self.extractionFolder(of: path).flatMap { extractionFolderParents[$0] }
-                let lowerReason = reason.lowercased()
-                let isNoGain = lowerReason.contains("no gain") || lowerReason.contains("size")
-                // a stop interrupts every running task, each reporting it as a skip
-                let isInterrupted = lowerReason == "interrupted"
-                // signed and interrupted files are supported, just left alone: keep them visible
-                let shouldHideChild = hideUnsupported && !isNoGain && !isSigned && !isInterrupted
 
-                // create child UI node only if it's a "no gain" skip. Otherwise, discard it entirely.
-                updateItem(for: path, createIfNeeded: !shouldHideChild, parentHint: parentHint) { parent, child, isRoot in
+                updateItem(for: path, createIfNeeded: !shouldHideChild, parentHint: parentContainer) { parent, child, isRoot in
                     let targetName = URL(fileURLWithPath: path).lastPathComponent
-                    let skipMsg = isInterrupted ? "INTERRUPTED [\(targetName)]" : "SKIPPED [\(targetName)]: \(reason)"
-                    let computedStatus: FileItem.ProcessingStatus = isInterrupted ? .stopped : (isNoGain ? .noGain : .skipped)
+                    let skipMsg = reason == .interrupted ? "INTERRUPTED [\(targetName)]" : "SKIPPED [\(targetName)]: \(message)"
 
+                    // a container's own stream being skipped isn't final: its rebuild still decides
                     if isRoot {
                         parent.status = computedStatus
                         parent.logs.append(skipMsg)
                         logs.append(skipMsg)
+                        if !isContainerSelf { Self.settleContents(of: &parent) }
                     } else {
                         if shouldHideChild {
                             child = nil // Enforce removal just in case it existed
                             // we DO NOT append logs for hidden files to save main thread performance
                         } else {
-                            child?.status = computedStatus
-                            child?.logs.append(skipMsg)
+                            if var skipped = child {
+                                skipped.status = computedStatus
+                                skipped.logs.append(skipMsg)
+                                if !isContainerSelf { Self.settleContents(of: &skipped) }
+                                child = skipped
+                            }
                             parent.logs.append("[CHILD] \(skipMsg)")
                             logs.append("[CHILD] \(skipMsg)")
                         }
@@ -517,24 +481,7 @@ final class ChiselViewModel {
         var localItems = items
         var logsToAppend: [String] = []
 
-        func discardSubtree(_ nodes: inout [FileItem]) {
-            for j in nodes.indices {
-                switch nodes[j].status {
-                case .completed, .noGain, .simulated:
-                    nodes[j].status = .stopped
-                    nodes[j].sizeAfter = nil
-                    let msg = "DISCARDED: PARENT CONTAINER WAS NOT FINALIZED"
-                    nodes[j].logs.append(msg)
-                    logsToAppend.append("[\(nodes[j].url.lastPathComponent)] \(msg)")
-                default:
-                    break
-                }
-                if nodes[j].children != nil {
-                    discardSubtree(&nodes[j].children!)
-                }
-            }
-        }
-
+        // files still queued when the stop arrived get no event; containers do, and settle their contents
         func traverseAndMark(nodes: inout [FileItem]) {
             for i in 0..<nodes.count {
                 let currentStatus = nodes[i].status
@@ -551,18 +498,6 @@ final class ChiselViewModel {
 
                 if nodes[i].children != nil {
                     traverseAndMark(nodes: &nodes[i].children!)
-
-                    // a container is rebuilt (Phase 3) only once everything inside it is done,
-                    // inner ones before outer ones, so a stop can leave descendants that finished
-                    // looking "done" (even a rebuilt inner container) while the container that
-                    // was supposed to embed them never got rebuilt. Their results only exist
-                    // in a temp dir the user will never see - reflect that on the whole subtree.
-                    switch nodes[i].status {
-                    case .completed, .noGain, .simulated:
-                        break
-                    default:
-                        discardSubtree(&nodes[i].children!)
-                    }
                 }
             }
         }
@@ -624,7 +559,8 @@ final class ChiselViewModel {
     }
 
     // what a container's final result means for its contents, whose results only reach disk inside it:
-    // all of them fail with it, and on no gain the ones that had shrunk are discarded
+    // all of them fail with it, on no gain the ones that had shrunk are discarded, and if a stop kept it
+    // from being rebuilt nothing they achieved is kept
     private static func settleContents(of container: inout FileItem) {
         guard container.children != nil else { return }
         let name = container.url.lastPathComponent
@@ -639,6 +575,15 @@ final class ChiselViewModel {
                 switch status {
                 case .completed, .simulated:
                     return (.skipped, "DISCARDED: CONTAINER \(name) DID NOT GET SMALLER")
+                default:
+                    return nil
+                }
+            }
+        case .stopped:
+            markContents(&container.children!) { status in
+                switch status {
+                case .completed, .noGain, .simulated:
+                    return (.stopped, "DISCARDED: CONTAINER \(name) WAS NOT REBUILT")
                 default:
                     return nil
                 }
@@ -661,22 +606,6 @@ final class ChiselViewModel {
         }
     }
 
-    // leftovers whose parent never got a node (the run stopped mid-analysis) fall back to the heuristic
-    private func placeRemainingContainers(_ unplaced: inout [(path: String, parent: String, numChildren: Int)]) {
-        for waiting in unplaced {
-            registerContainer(path: waiting.path, numChildren: waiting.numChildren, parentContainer: waiting.parent)
-        }
-        unplaced.removeAll()
-    }
-
-    // the "<prefix>_<stem>_<digits>" folder a chisel container was extracted into
-    private static func extractionFolder(of path: String) -> String? {
-        let components = URL(fileURLWithPath: path).pathComponents
-        guard let base = components.lastIndex(where: { $0.hasPrefix("chisel-") }),
-              base + 1 < components.count - 1 else { return nil }
-        return NSString.path(withComponents: Array(components[...(base + 1)]))
-    }
-
     private func exactIndexPath(for path: String, in nodes: [FileItem]) -> [Int]? {
         for idx in nodes.indices {
             if nodes[idx].tempURL.path == path {
@@ -693,50 +622,11 @@ final class ChiselViewModel {
         if let exact = exactIndexPath(for: path, in: nodes) {
             return exact
         }
-
-        // exact resolution via chisel's parent container
-        if let parentHint, let parentIndexPath = exactIndexPath(for: parentHint, in: nodes) {
-            return parentIndexPath
-        }
-
-        return extractionFolderIndexPath(for: path, in: nodes)
-    }
-
-    // fallback for events chisel doesn't annotate with a parent (analysis-phase skips and errors):
-    // chisel extracts into "chisel-<prefix>/<prefix>_<stem, at most 32 bytes>_<digits>/", entries
-    // possibly sitting in subfolders of it
-    private func extractionFolderIndexPath(for path: String, in nodes: [FileItem]) -> [Int]? {
-        for idx in nodes.indices {
-            if let children = nodes[idx].children, let childPath = extractionFolderIndexPath(for: path, in: children) {
-                return [idx] + childPath
-            }
-        }
-
-        let components = URL(fileURLWithPath: path).deletingLastPathComponent().pathComponents
-        guard let base = components.lastIndex(where: { $0.hasPrefix("chisel-") }) else { return nil }
-        let folders = components[(base + 1)...].compactMap { folder -> Substring? in
-            guard let separator = folder.lastIndex(of: "_") else { return nil }
-            let suffix = folder[folder.index(after: separator)...]
-            guard !suffix.isEmpty, suffix.allSatisfy(\.isNumber) else { return nil }
-            return folder[..<separator]
-        }
-        guard !folders.isEmpty else { return nil }
-
-        for idx in nodes.indices {
-            let stem = Self.chiselTempStem(of: nodes[idx].tempURL)
-            if !stem.isEmpty, folders.contains(where: { $0.hasSuffix("_" + stem) }) {
-                return [idx]
-            }
+        // a file that has no node yet goes under the container chisel says it came from
+        if let parentHint {
+            return exactIndexPath(for: parentHint, in: nodes)
         }
         return nil
-    }
-
-    private static func chiselTempStem(of url: URL) -> String {
-        let utf8 = Array(url.deletingPathExtension().lastPathComponent.utf8)
-        guard utf8.count > 32 else { return String(decoding: utf8, as: UTF8.self) }
-        var cut = 32
-        while cut > 0 && (utf8[cut] & 0xC0) == 0x80 { cut -= 1 }
-        return String(decoding: utf8[..<cut], as: UTF8.self)
     }
 
     private func updateItem(for path: String, createIfNeeded: Bool = true, parentHint: String? = nil, action: (inout FileItem, inout FileItem?, Bool) -> Void) {
@@ -848,15 +738,5 @@ final class ChiselViewModel {
             }
         }
         return nil
-    }
-}
-
-private extension ChiselEvent {
-    // chisel starts processing (phase 2) only once every input has been analyzed
-    var isPastAnalysis: Bool {
-        switch self {
-        case .start, .finish, .finalizeStart: return true
-        default: return false
-        }
     }
 }
