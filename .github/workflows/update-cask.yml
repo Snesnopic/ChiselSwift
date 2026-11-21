@@ -1,0 +1,97 @@
+name: Update Homebrew cask
+
+# called by the release workflow once the zip is published, or run on its own to retry without rebuilding
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+    secrets:
+      TAP_GITHUB_TOKEN:
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published tag whose zip the cask should point to (e.g. v1.0.1)
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  update-cask:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: homebrew-tools-chisel-cask
+      cancel-in-progress: false
+    env:
+      TAG: ${{ inputs.tag }}
+    steps:
+      - name: Get the published zip's checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          [[ "$TAG" =~ ^v([0-9]+\.[0-9]+(\.[0-9]+)?)$ ]] || fail "tag $TAG is not vX.Y or vX.Y.Z"
+          version="${BASH_REMATCH[1]}"
+          zip="Chisel-$version.zip"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "$zip" --dir "$RUNNER_TEMP" \
+            || fail "release $TAG has no asset $zip"
+          sha=$(shasum -a 256 "$RUNNER_TEMP/$zip" | cut -d' ' -f1)
+          digest=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets \
+            --jq ".assets[] | select(.name == \"$zip\") | .digest")
+          if [[ -n "$digest" && "$digest" != "sha256:$sha" ]]; then fail "downloaded $zip is $sha, the release says $digest"; fi
+          echo "$zip $sha"
+          {
+            echo "VERSION=$version"
+            echo "SHA=$sha"
+          } >> "$GITHUB_ENV"
+
+      - name: Check out homebrew-tools
+        uses: actions/checkout@v6
+        with:
+          repository: Snesnopic/homebrew-tools
+          token: ${{ secrets.TAP_GITHUB_TOKEN }}
+          path: homebrew-tap
+
+      # only the version and sha256 lines change; plain sed -E without -i behaves the same in BSD and GNU sed
+      - name: Update the cask
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          cask=homebrew-tap/Casks/chisel.rb
+          [[ -f "$cask" ]] || fail "$cask not found"
+          [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+)+$ ]] || fail "version '$VERSION' is malformed"
+          [[ "$SHA" =~ ^[0-9a-f]{64}$ ]] || fail "sha256 '$SHA' is malformed"
+          version_re='^([[:space:]]*)version "[^"]*"$'
+          sha_re='^([[:space:]]*)sha256 "[^"]*"$'
+          for re in "$version_re" "$sha_re"; do
+            count=$(grep -cE "$re" "$cask" || true)
+            [[ "$count" -eq 1 ]] || fail "$cask has $count lines matching $re, expected exactly 1"
+          done
+          sed -E \
+            -e 's/'"$version_re"'/\1version "'"$VERSION"'"/' \
+            -e 's/'"$sha_re"'/\1sha256 "'"$SHA"'"/' \
+            "$cask" > "$cask.new"
+          mv "$cask.new" "$cask"
+          grep -qE '^[[:space:]]*version "'"$VERSION"'"$' "$cask" || fail "version line not updated"
+          grep -qE '^[[:space:]]*sha256 "'"$SHA"'"$' "$cask" || fail "sha256 line not updated"
+          git -C homebrew-tap diff
+
+      - name: Commit and push
+        run: |
+          cd homebrew-tap
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          if [[ -n $(git status -s) ]]; then
+            git add Casks/chisel.rb
+            git commit -m "Update chisel cask to $VERSION"
+            git push
+          else
+            echo "Cask already at $VERSION with this sha256."
+          fi

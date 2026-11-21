@@ -145,3 +145,14 @@ jobs:
             echo "- Size: $(stat -f %z "$ZIP") bytes"
             echo "- ChiselKit: \`$CHISELKIT_SHA\`"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  cask:
+    needs: macos-app
+    if: github.event_name == 'push' || inputs.tag != ''
+    permissions:
+      contents: read
+    uses: ./.github/workflows/update-cask.yml
+    with:
+      tag: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+    secrets:
+      TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}

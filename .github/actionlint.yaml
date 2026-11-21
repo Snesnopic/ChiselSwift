@@ -1,0 +1,4 @@
+self-hosted-runner:
+  # GitHub's preview image (actions/runner-images#14404), not yet in actionlint's list of hosted labels
+  labels:
+    - xcode-27
