@@ -271,6 +271,17 @@
         }
       }
     },
+    "Changed during the run" : {
+      "comment" : "File inspector value: the file was skipped because something else changed it while Chisel was working on it.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modificato durante l'elaborazione"
+          }
+        }
+      }
+    },
     "Chisel" : {
       "comment" : "The application name. Do not translate.",
       "shouldTranslate" : false
@@ -1030,6 +1041,17 @@
         }
       }
     },
+    "Read-only" : {
+      "comment" : "File inspector value: the file was skipped because it can't be written.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sola lettura"
+          }
+        }
+      }
+    },
     "Recursive folder import" : {
       "comment" : "Settings toggle to allow importing files from nested subdirectories.",
       "localizations" : {
@@ -1277,6 +1299,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Solo simulazione (dry run)"
+          }
+        }
+      }
+    },
+    "Skipped" : {
+      "comment" : "File inspector row: why Chisel left the file as it was.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saltato"
           }
         }
       }

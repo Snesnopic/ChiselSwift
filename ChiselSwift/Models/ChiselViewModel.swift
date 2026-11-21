@@ -387,12 +387,20 @@ final class ChiselViewModel {
                 case .interrupted:
                     shouldHideChild = false
                     computedStatus = .stopped
-                case .signed:
+                case .signed, .readOnly, .changedDuringRun:
                     shouldHideChild = false
                     computedStatus = .skipped
                 case .junk, .empty, .unsupported, .nestingTooDeep, .nothingToDo:
                     shouldHideChild = hideUnsupported
                     computedStatus = .skipped
+                }
+                let skipNote: String? = switch reason {
+                case .readOnly:
+                    String(localized: "Read-only", comment: "File inspector value: the file was skipped because it can't be written.")
+                case .changedDuringRun:
+                    String(localized: "Changed during the run", comment: "File inspector value: the file was skipped because something else changed it while Chisel was working on it.")
+                default:
+                    nil
                 }
 
                 updateItem(for: path, createIfNeeded: !shouldHideChild, parentHint: parentContainer) { parent, child, isRoot in
@@ -402,6 +410,7 @@ final class ChiselViewModel {
                     // a container's own stream being skipped isn't final: its rebuild still decides
                     if isRoot {
                         parent.status = computedStatus
+                        parent.skipNote = skipNote
                         parent.logs.append(skipMsg)
                         logs.append(skipMsg)
                         if !isContainerSelf { Self.settleContents(of: &parent) }
@@ -412,6 +421,7 @@ final class ChiselViewModel {
                         } else {
                             if var skipped = child {
                                 skipped.status = computedStatus
+                                skipped.skipNote = skipNote
                                 skipped.logs.append(skipMsg)
                                 if !isContainerSelf { Self.settleContents(of: &skipped) }
                                 child = skipped
@@ -481,7 +491,7 @@ final class ChiselViewModel {
         var localItems = items
         var logsToAppend: [String] = []
 
-        // files still queued when the stop arrived get no event; containers do, and settle their contents
+        // files still waiting for analysis when the stop arrived get no event; the rest do, and containers settle their contents
         func traverseAndMark(nodes: inout [FileItem]) {
             for i in 0..<nodes.count {
                 let currentStatus = nodes[i].status
@@ -559,8 +569,8 @@ final class ChiselViewModel {
     }
 
     // what a container's final result means for its contents, whose results only reach disk inside it:
-    // all of them fail with it, on no gain the ones that had shrunk are discarded, and if a stop kept it
-    // from being rebuilt nothing they achieved is kept
+    // all of them fail with it, on no gain or if it was left as it was (e.g. changed during the run) the ones
+    // that had shrunk are discarded, and if a stop kept it from being rebuilt nothing they achieved is kept
     private static func settleContents(of container: inout FileItem) {
         guard container.children != nil else { return }
         let name = container.url.lastPathComponent
@@ -575,6 +585,15 @@ final class ChiselViewModel {
                 switch status {
                 case .completed, .simulated:
                     return (.skipped, "DISCARDED: CONTAINER \(name) DID NOT GET SMALLER")
+                default:
+                    return nil
+                }
+            }
+        case .skipped:
+            markContents(&container.children!) { status in
+                switch status {
+                case .completed, .simulated:
+                    return (.skipped, "DISCARDED: CONTAINER \(name) WAS LEFT AS IT WAS")
                 default:
                     return nil
                 }

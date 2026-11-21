@@ -30,6 +30,9 @@ struct FileItem: Identifiable, Equatable {
     /// Processing logs associated with this file.
     var logs: [String] = []
 
+    // localized reason chisel left it as it was, when the user can do something about it
+    var skipNote: String?
+
     var savingPercentage: Double? {
             guard let sizeAfter = sizeAfter, size > 0 else { return nil }
             let gain = Double(size - sizeAfter)

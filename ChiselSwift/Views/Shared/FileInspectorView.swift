@@ -163,6 +163,9 @@ struct FileInspectorView: View {
                 if let after = file.sizeAfter {
                     InfoRow(label: "New size", value: formatSize(after))
                 }
+                if let note = file.skipNote {
+                    InfoRow(label: "Skipped", value: note)
+                }
             }
 
             logTerminalView(logs: file.logs, title: "Process log", scrolls: scrollsLog)
